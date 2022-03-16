@@ -1,29 +1,56 @@
-class User{
+class User {
     constructor(email) {
-        this.email = email;
+        this.email = email
+    }
+    static getUserByEmail(email) {
+        /*    if (!(email))
+                throw ("please fill all the information");
+            try {
+
+            } catch (err) {
+                throw err
+            }*/
     }
 
-    static getUserByEmail(email){
+    setNewMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector) {
+        /*    if (!(title && descriptions && participants && startingTime && endingTime && purpose && office && whiteboard && projector))
+                throw ("please fill all the information");
+            try {
+
+            } catch (err) {
+                throw err
+            }*/
     }
 
-    me(){
-        console.log(this)
-    }
-    setMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector){
+    getSoonestAvailableTime(participants, duration, purpose, office, whiteboard, projector) {
+        /*    if (!(participants && duration && purpose && office && whiteboard && projector))
+                throw ("please fill all the information");
+            try {
 
-    }
-
-    getFirstAvailableTime(participants, duration, purpose, office, whiteboard, projector){
-
-    }
-    cancelMeeting(meetingIdentifier){
-
-    }
-    editMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector){
-
+            } catch (err) {
+                throw err
+            }*/
     }
 
+    cancelAMeeting(meetingIdentifier) {
+        /*    if (!(meetingIdentifier))
+                throw ("please fill all the information");
+            try {
 
+            } catch (err) {
+                throw err
+            }*/
+    }
+
+    editAMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector) {
+        /*    if (!(meetingIdentifier && title && descriptions && participants && startingTime && endingTime && purpose && office && whiteboard && projector))
+                throw ("please fill all the information");
+            try {
+
+            } catch (err) {
+                throw err
+            }*/
+    }
 }
 
 module.exports = User

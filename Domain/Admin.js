@@ -1,17 +1,23 @@
 const User = require('./User')
-class Admin extends User{/*
-    constructor() {
-        super();
-    }*/
+class Admin extends User{
 
-    printEmail(){
-        console.log(this.email)
+    getMeetingInATimeSlot(meetingIdentifier){
+/*        if (!(meetingIdentifier))
+            throw ("please fill all the information");
+        try {
+
+        }catch (err){
+            throw err
+        }*/
     }
-    getMeetingInTimeSlot(meetingIdentifier){
+    getMeetingInARoom(roomIdentifier, date){
+/*        if (!(roomIdentifier && date))
+            throw ("please fill all the information");
+        try {
 
-    }
-    getMeetingInRoom(roomIdentifier, date){
-
+        }catch (err){
+            throw err
+        }*/
     }
 
 }
