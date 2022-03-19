@@ -1,23 +1,23 @@
 const User = require('./User')
-class Admin extends User{
+const meetingDataBase = require('../DataAccess/MeetingDataBase')
 
-    getMeetingInATimeSlot(meetingIdentifier){
-/*        if (!(meetingIdentifier))
-            throw ("please fill all the information");
-        try {
+class Admin extends User {
 
+    getMeetingInATimeSlot(startingTime, endingTime) {
+        try{
+            return meetingDataBase.meetingsInTimeSlot(startingTime, endingTime)
         }catch (err){
             throw err
-        }*/
+        }
     }
-    getMeetingInARoom(roomIdentifier, date){
-/*        if (!(roomIdentifier && date))
-            throw ("please fill all the information");
-        try {
+
+    getMeetingInARoom(roomIdentifier, date) {
+        try{
+            return meetingDataBase.meetingsInRoom(roomIdentifier, date);
 
         }catch (err){
             throw err
-        }*/
+        }
     }
 
 }

@@ -1,9 +1,28 @@
+const mongoose = require('mongoose');
+
+const meetingSchema = new mongoose.Schema({
+    title: String,
+    description: String,
+    participants: [Number],
+    start: Number,
+    end: Number,
+    purpose: String,
+    office: String,
+    whiteboard: Boolean,
+    projector: Boolean,
+    isCancelled: Boolean
+})
+
+module.exports = mongoose.model("Meeting", meetingSchema)
+
+
+/*
 const mongoose = require('mongoose')
 
-/*const userSchema = new mongoose.Schema({
+/!*const userSchema = new mongoose.Schema({
     name: String,
     age: Number
-})*/
+})*!/
 const addressSchema = new mongoose.Schema({
     street: {
         type: String,
@@ -85,3 +104,4 @@ userSchema.post("save", function (doc, next){
 module.exports = mongoose.model("User", userSchema)
 
 
+*/

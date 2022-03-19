@@ -1,8 +1,9 @@
 const express = require('express');
-const Token = require('./AccessManager/Token');
-const AccessManager = require('./AccessManager/AccessManager');
-const AdminDTO = require('./DTO/Admin');
-const UserDTO = require('./DTO/User')
+const Token = require('../AccessManager/Token');
+const AccessManager = require('../AccessManager/AccessManager');
+const AdminDTO = require('../DTO/Admin');
+const UserDTO = require('../DTO/User');
+const Exception = require('../DTO/Exception');
 const app = express();
 
 app.use(express.json());
@@ -14,6 +15,7 @@ app.post('/RoomManagement/SetMeeting', Token.authenticateActor, AccessManager.va
         user.setMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector);
         res.status(201).send("Your meeting was successfully created!!");
     }catch (err){
+        res.status(Exception.getStatusByExceptionMessage(err)).send(err);
 
     }
 })
@@ -24,8 +26,8 @@ app.post('/RoomManagement/GetFirstAvailableTime', Token.authenticateActor, Acces
         const user = UserDTO.getUserByEmail(req.email);
         const firstAvailableTime = user.getFirstAvailableTime(participants, duration, purpose, office, whiteboard, projector);
         res.status(202).send(firstAvailableTime);
-
     }catch (err){
+        res.status(Exception.getStatusByExceptionMessage(err)).send(err);
 
     }
 })
@@ -37,6 +39,7 @@ app.post('/RoomManagement/CancelMeeting', Token.authenticateActor, AccessManager
         user.cancelMeeting(meetingIdentifier);
         res.status(202).send("The selected meeting was successfully cancelled");
     }catch (err){
+        res.status(Exception.getStatusByExceptionMessage(err)).send(err);
 
     }
 })
@@ -48,17 +51,19 @@ app.post('/RoomManagement/EditMeeting', Token.authenticateActor, AccessManager.v
         user.editMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector);
         res.status(202).send("The selected meeting was successfully edited!");
     }catch (err){
+        res.status(Exception.getStatusByExceptionMessage(err)).send(err);
 
     }
 })
 
 app.post('/RoomManagement/GetMeetingInTimeSlot', Token.authenticateActor, AccessManager.validateAccess,async (req, res) => {
-    const { meetingIdentifier } = req.body
+    const { startingTime, endingTime } = req.body
     try {
         const admin = AdminDTO.getUserByEmail(req.email);
-        const meetingsInTimeSlot = admin.getMeetingInTimeSlot(meetingIdentifier);
+        const meetingsInTimeSlot = admin.getMeetingInTimeSlot(startingTime, endingTime);
         res.status(200).send(meetingsInTimeSlot);
     }catch (err){
+        res.status(Exception.getStatusByExceptionMessage(err)).send(err);
 
     }
 })
@@ -70,6 +75,7 @@ app.post('/RoomManagement/GetMeetingInRoom', Token.authenticateActor, AccessMana
         const meetingsInRoom = admin.getMeetingInRoom(roomIdentifier, date);
         res.status(200).send(meetingsInRoom);
     }catch (err){
+        res.status(Exception.getStatusByExceptionMessage(err)).send(err);
 
     }
 })

@@ -1,9 +1,14 @@
 const mongoose = require('mongoose');
+const Meeting = require('./Meeting')
 
-mongoose.connect('mongodb://localhost/test');
+async function connectToDB() {
+    await mongoose.connect('mongodb://localhost/MeetingManager');
+}
 
 mongoose.connection.once('open', function (){
     console.log("done")
 }).on('error', function (error){
     console.log('error', error)
 })
+
+module.exports = { connectToDB }

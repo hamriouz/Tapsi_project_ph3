@@ -1,4 +1,5 @@
 const ApiGroups = require('./ApiGroups');
+const UserDomain = require("../DTO/User");
 
 class AccessManager {
     static validateAccess(req, res, next) {
@@ -6,17 +7,14 @@ class AccessManager {
         if (ApiGroups[tokenRole] && ApiGroups[tokenRole].routes.some(route => req.route === route)) {
             const email = req.userEmail;
             const tokenRole = req.userRole;
-            //todo should not have access to DB
-            const user = DataBaseManager.getUserByEmail(email)
-            const userRole = DataBaseManager.getRole(email)
-            const userStatus = DataBaseManager.getStatus(email)
+            const user = UserDomain.getUserByEmail(email)
+            const userRole = UserDomain.getRole(email)
+            const userStatus = UserDomain.getStatus(email)
 
             if (user) {
                 if (userRole !== tokenRole)
-                    // throw "Your role was changed! Logout and login again"
                     res.status(403).send("Your role was changed! Logout and login again")
                 if (userStatus === "disable")
-                    // throw "Your account was disabled! You don't have the permission to take this action!";
                     res.status(403).send("Your account was disabled! You don't have the permission to take this action!")
             }
             next();

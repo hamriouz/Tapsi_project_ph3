@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const User = require('./User');
+const User = require('./Meeting');
 mongoose.connect('mongodb://localhost/test', () => {
     console.log("connected")
 },
@@ -7,7 +7,33 @@ mongoose.connect('mongodb://localhost/test', () => {
 );
 
 
-run()
+// run()
+
+async function createMeeting(){
+
+}
+
+async function getFirstTimeForMeeting(){
+
+}
+
+async function cancelChosenMeeting(){
+
+}
+
+async function editChosenMeeting(){
+
+}
+
+async function getListAllMeetingInTimeSlot(startingTime, endingTome){
+
+}
+
+async function getListOfAllMeetingInRoom(){
+
+}
+
+
 
 async function run(){
     // create new user1
@@ -43,6 +69,15 @@ async function run(){
 
 }
 
+
+module.exports = {
+    createMeeting,
+    getFirstTimeForMeeting,
+    cancelChosenMeeting,
+    editChosenMeeting,
+    getListAllMeetingInTimeSlot,
+    getListOfAllMeetingInRoom
+}
 //update user:
 
 
