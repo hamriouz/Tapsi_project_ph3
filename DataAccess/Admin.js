@@ -1,6 +1,4 @@
-const DataBaseManager = require('../DataBaseManager/script');
-
-class MeetingDataBase{
+class Admin{
     static async meetingsInTimeSlot(startingTime, endingTime){
         let allMeetings = [];
         allMeetings.push();
@@ -19,19 +17,6 @@ class MeetingDataBase{
         return allMeetings;
 
     }
-
-    static async changeStatusToCancelled(meetingIdentifier){
-        const meeting = await DataBaseManager.getMeetingById(meetingIdentifier);
-        if (!meeting)
-            throw "No meeting found with the given identifier!"
-        try {
-            await DataBaseManager.cancelChosenMeeting(meetingIdentifier);
-        }catch (err){
-            throw err;
-        }
-    }
 }
 
-
-
-module.exports = MeetingDataBase
+module.exports = A

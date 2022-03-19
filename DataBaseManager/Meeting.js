@@ -10,7 +10,9 @@ const meetingSchema = new mongoose.Schema({
     office: String,
     whiteboard: Boolean,
     projector: Boolean,
-    isCancelled: Boolean
+    isCancelled: Boolean,
+    roomIdentifier: String,
+    organizer: Number
 })
 
 module.exports = mongoose.model("Meeting", meetingSchema)

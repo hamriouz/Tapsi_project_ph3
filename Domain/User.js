@@ -1,3 +1,5 @@
+const MeetingDataBase = require('../DataAccess/MeetingDataBase');
+
 class User {
     constructor(email) {
         this.email = email
@@ -24,8 +26,12 @@ class User {
 
     }
 
-    cancelAMeeting(meetingIdentifier) {
-
+    async cancelAMeeting(meetingIdentifier) {
+        try {
+            await MeetingDataBase.changeStatusToCancelled(meetingIdentifier);
+        }catch (err){
+            throw err;
+        }
     }
 
     editAMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector) {

@@ -36,7 +36,7 @@ app.post('/RoomManagement/CancelMeeting', Token.authenticateActor, AccessManager
     const { meetingIdentifier } = req.body
     try {
         const user = UserDTO.getUserByEmail(req.email);
-        user.cancelMeeting(meetingIdentifier);
+        await user.cancelMeeting(meetingIdentifier);
         res.status(202).send("The selected meeting was successfully cancelled");
     }catch (err){
         res.status(Exception.getStatusByExceptionMessage(err)).send(err);

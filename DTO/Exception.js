@@ -13,7 +13,13 @@ class Exception {
             "No meeting found in the wanted time slot!"
             :
             case
-            "No meeting found in the wanted room at the given time!":
+            "No meeting found in the wanted room at the given time!"
+            :
+            case "No meeting found with the given identifier!"
+            :
+            case
+                "No room found with the given identifier!"
+            :
                 return 404;
         }
     }

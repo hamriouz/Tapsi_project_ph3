@@ -8,6 +8,9 @@ mongoose.connect('mongodb://localhost/test', () => {
 
 
 // run()
+async function getMeetingById(){
+
+}
 
 async function createMeeting(){
 
@@ -17,7 +20,7 @@ async function getFirstTimeForMeeting(){
 
 }
 
-async function cancelChosenMeeting(){
+async function cancelChosenMeeting(meetingIdentifier){
 
 }
 
@@ -71,6 +74,7 @@ async function run(){
 
 
 module.exports = {
+    getMeetingById,
     createMeeting,
     getFirstTimeForMeeting,
     cancelChosenMeeting,

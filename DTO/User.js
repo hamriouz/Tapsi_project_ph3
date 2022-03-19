@@ -57,12 +57,12 @@ class User {
         }
     }
 
-    cancelMeeting(meetingIdentifier) {
+    async cancelMeeting(meetingIdentifier) {
         if (!(meetingIdentifier))
             throw ("please fill all the information");
         try {
             const user = UserDomain.getUserByEmail(this.email);
-            user.cancelAMeeting(meetingIdentifier)
+            await user.cancelAMeeting(meetingIdentifier)
         } catch (err) {
             throw err
         }
