@@ -1,56 +1,56 @@
-const UserDomain = require('../Domain/User')
-class User {
-    constructor(email) {
-        this.email = email;
+const organizerDomain = require('../Domain/Organizer')
+
+let InstanceOfOrganizerDTO;
+
+class Organizer {
+    constructor() {
     }
 
-    static getUserByEmail(email) {
+    static getOrganizer() {
+        if (InstanceOfOrganizerDTO)
+            return InstanceOfOrganizerDTO;
+        InstanceOfOrganizerDTO = new Organizer();
+        return InstanceOfOrganizerDTO;
+    }
+
+    static getRole(email) {
         if (!(email))
             throw ("please fill all the information");
         try {
-            return UserDomain.getUserByEmail(email);
+            return "role";
+            //todo this part will be deleted
         } catch (err) {
             throw err
         }
     }
 
-    static getRole(email){
+    static getStatus(email) {
         if (!(email))
             throw ("please fill all the information");
         try {
-            return UserDomain.getUserRole(email);
+            //todo this part will be deleted
+            return "status"
         } catch (err) {
             throw err
         }
     }
 
-    static getStatus(email){
-        if (!(email))
-            throw ("please fill all the information");
-        try {
-            return UserDomain.getUserStatus(email);
-        } catch (err) {
-            throw err
-        }
-    }
-
-    setMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector) {
+    setMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerEmail) {
         if (!(title && descriptions && participants && startingTime && endingTime && purpose && office && whiteboard && projector))
             throw ("please fill all the information");
         try {
-            const user = UserDomain.getUserByEmail(this.email);
-            user.setNewMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector);
+            const user = organizerDomain.getOrganizer();
+            return user.setNewMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerEmail);
         } catch (err) {
             throw err
         }
     }
-
 
     getFirstAvailableTime(participants, duration, purpose, office, whiteboard, projector) {
         if (!(participants && duration && purpose && office && whiteboard && projector))
             throw ("please fill all the information");
         try {
-            const user = UserDomain.getUserByEmail(this.email);
+            const user = organizerDomain.getOrganizer();
             return user.getSoonestAvailableTime(participants, duration, purpose, office, whiteboard, projector);
         } catch (err) {
             throw err
@@ -61,7 +61,7 @@ class User {
         if (!(meetingIdentifier))
             throw ("please fill all the information");
         try {
-            const user = UserDomain.getUserByEmail(this.email);
+            const user = organizerDomain.getOrganizer();
             await user.cancelAMeeting(meetingIdentifier)
         } catch (err) {
             throw err
@@ -72,7 +72,7 @@ class User {
         if (!(meetingIdentifier && title && descriptions && participants && startingTime && endingTime && purpose && office && whiteboard && projector))
             throw ("please fill all the information");
         try {
-            const user = UserDomain.getUserByEmail(this.email);
+            const user = organizerDomain.getOrganizer();
             user.editAMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector)
         } catch (err) {
             throw err
@@ -81,4 +81,4 @@ class User {
 
 }
 
-module.exports = User
+module.exports = Organizer

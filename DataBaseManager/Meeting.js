@@ -63,7 +63,7 @@ const userSchema = new mongoose.Schema({
     },
     bestFriend: {
         type: mongoose.SchemaTypes.ObjectId,
-        ref: "User"
+        ref: "Organizer"
     },
     hobbies: [String],
     address: addressSchema
@@ -103,7 +103,7 @@ userSchema.post("save", function (doc, next){
     doc.sayHi()
     //doc is the thing that has been saved
 })
-module.exports = mongoose.model("User", userSchema)
+module.exports = mongoose.model("Organizer", userSchema)
 
 
 */

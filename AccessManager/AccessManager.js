@@ -1,5 +1,5 @@
 const ApiGroups = require('./ApiGroups');
-const UserDomain = require("../DTO/User");
+const UserDomain = require("../DTO/Organizer");
 
 class AccessManager {
     static validateAccess(req, res, next) {
@@ -7,7 +7,7 @@ class AccessManager {
         if (ApiGroups[tokenRole] && ApiGroups[tokenRole].routes.some(route => req.route === route)) {
             const email = req.userEmail;
             const tokenRole = req.userRole;
-            const user = UserDomain.getUserByEmail(email)
+            const user = UserDomain.getOrganizer(email)
             const userRole = UserDomain.getRole(email)
             const userStatus = UserDomain.getStatus(email)
 
