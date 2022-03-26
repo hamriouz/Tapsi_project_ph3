@@ -1,38 +1,16 @@
 const MeetingDataBase = require('../DataAccess/MeetingDataBase');
-// let newOrganizer;
-let instance;
+
+let instanceOfOrganizerDomain;
 
 class OrganizerDomain {
     constructor() {
     }
 
     static getOrganizer() {
-        if (instance)
-            return instance;
-        instance = new OrganizerDomain();
-        return instance;
-
-/*
-        // let newOrganizer;
-        (function() {
-            // let instance;
-            newOrganizer = function OrganizerDomain() {
-                if (instance) {
-                    return instance;
-                }
-                instance = this;
-// all the functionality
-                this.firstName = 'John';
-                this.lastName = 'Doe';
-                return instance;
-            };
-        }());
-*/
-
-    }
-
-    printSalam(){
-        console.log("salam")
+        if (instanceOfOrganizerDomain)
+            return instanceOfOrganizerDomain;
+        instanceOfOrganizerDomain = new OrganizerDomain();
+        return instanceOfOrganizerDomain;
     }
 
     static async getUserStatus(email){

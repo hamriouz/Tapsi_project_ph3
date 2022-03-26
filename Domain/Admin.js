@@ -1,15 +1,14 @@
-const User = require('./Organizer')
+const organizerDomain = require('./Organizer')
 const meetingDataBase = require('../DataAccess/MeetingDataBase')
-const Console = require("console");
 
 let instance;
 
-class Admin extends User {
+class AdminDomain extends organizerDomain {
 
     static getOrganizer(){
         if (instance)
             return instance;
-        instance = new Admin();
+        instance = new AdminDomain();
         return instance;
     }
 
@@ -32,4 +31,4 @@ class Admin extends User {
 
 }
 
-module.exports = Admin
+module.exports = AdminDomain
