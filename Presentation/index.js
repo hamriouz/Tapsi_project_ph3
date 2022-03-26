@@ -22,10 +22,10 @@ app.post('/RoomManagement/SetMeeting', Token.authenticateActor, AccessManager.va
 })
 
 app.post('/RoomManagement/GetFirstAvailableTime', Token.authenticateActor, AccessManager.validateAccess,async (req, res) => {
-    const { participants, duration, purpose, office, whiteboard, projector } = req.body
+    const { participants, specificDate, duration, purpose, office, whiteboard, projector } = req.body
     try {
         const organizer = OrganizerDTO.getOrganizer();
-        const firstAvailableTime = organizer.getFirstAvailableTime(participants, duration, purpose, office, whiteboard, projector);
+        const firstAvailableTime = organizer.getFirstAvailableTime(participants, specificDate, duration, purpose, office, whiteboard, projector);
         res.status(202).send(firstAvailableTime);
     }catch (err){
         res.status(Exception.getStatusByExceptionMessage(err)).send(err);
@@ -51,7 +51,7 @@ app.post('/RoomManagement/EditMeeting', Token.authenticateActor, AccessManager.v
     try {
         //todo check if the user is the organizer of the meeting
         const organizer = OrganizerDTO.getOrganizer();
-        organizer.editMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector);
+        await organizer.editMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector);
         res.status(202).send("The selected meeting was successfully edited!");
     }catch (err){
         res.status(Exception.getStatusByExceptionMessage(err)).send(err);

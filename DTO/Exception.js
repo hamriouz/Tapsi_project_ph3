@@ -21,6 +21,8 @@ class Exception {
                 "No room found with the given identifier!"
             :
                 return 404;
+            default:
+                return 404;
         }
     }
 }

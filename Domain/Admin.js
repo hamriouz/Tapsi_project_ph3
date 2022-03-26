@@ -1,6 +1,6 @@
 const organizerDomain = require('./Organizer')
-// const meetingDataBase = require('../DataAccess/MeetingDataBase')
 const dataAccess = require('../DataAccess/Admin')
+
 let instance;
 
 class AdminDomain extends organizerDomain {

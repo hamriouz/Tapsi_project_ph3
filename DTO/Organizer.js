@@ -36,7 +36,8 @@ class Organizer {
     }
 
     setMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerEmail) {
-        if (!(title && descriptions && participants && startingTime && endingTime && purpose && office && whiteboard && projector))
+
+        if (!(title && descriptions && participants && startingTime && endingTime && purpose && office) && (whiteboard !== undefined && projector !== undefined))
             throw ("please fill all the information");
         try {
             const user = organizerDomain.getOrganizer();
@@ -46,12 +47,12 @@ class Organizer {
         }
     }
 
-    getFirstAvailableTime(participants, duration, purpose, office, whiteboard, projector) {
-        if (!(participants && duration && purpose && office && whiteboard && projector))
+    getFirstAvailableTime(participants, specificDate, duration, purpose, office, whiteboard, projector) {
+        if (!(participants && duration && purpose && office) && (whiteboard !== undefined && projector !== undefined))
             throw ("please fill all the information");
         try {
             const user = organizerDomain.getOrganizer();
-            return user.getSoonestAvailableTime(participants, duration, purpose, office, whiteboard, projector);
+            return user.getSoonestAvailableTime(participants, specificDate, duration, purpose, office, whiteboard, projector);
         } catch (err) {
             throw err
         }
@@ -68,12 +69,12 @@ class Organizer {
         }
     }
 
-    editMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector) {
-        if (!(meetingIdentifier && title && descriptions && participants && startingTime && endingTime && purpose && office && whiteboard && projector))
-            throw ("please fill all the information");
+    async editMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector) {
+        // if (!(meetingIdentifier && title && descriptions && participants && startingTime && endingTime && purpose && office && whiteboard && projector))
+        //     throw ("please fill all the information");
         try {
             const user = organizerDomain.getOrganizer();
-            user.editAMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector)
+            await user.editAMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector)
         } catch (err) {
             throw err
         }

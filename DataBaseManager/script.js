@@ -12,18 +12,32 @@ async function connectToDataBase() {
 // run()
 async function getMeetingById(meetingID) {
     await connectToDataBase();
-    let meeting = await Meeting.findById(meetingID)
-    return meeting;
+    return Meeting.findById(meetingID);
 }
 
-async function createMeeting() {
+async function createMeeting(title, description, participants, start, end, purpose, office, whiteboard, projector, roomIdentifier, organizerId) {
     await connectToDataBase();
-
+    //todo make the purpose enum
+    const meeting = new Meeting({
+        title: title,
+        description: description,
+        participants: participants,
+        start: start,
+        end: end,
+        purpose: purpose,
+        office: office,
+        whiteboard: whiteboard,
+        projector: projector,
+        isCancelled: false,
+        roomIdentifier: roomIdentifier,
+        organizer: organizerId
+    })
+    await meeting.save();
 }
 
 async function getFirstTimeForMeeting() {
     await connectToDataBase();
-
+    //todo
 }
 
 async function cancelChosenMeeting(meetingIdentifier) {
@@ -34,8 +48,68 @@ async function cancelChosenMeeting(meetingIdentifier) {
 
 }
 
-async function editChosenMeeting() {
+async function changeTitle(meetingIdentifier, newTitle) {
     await connectToDataBase();
+    const meeting = await Meeting.findById(meetingIdentifier);
+    meeting.title = newTitle;
+    meeting.save();
+
+}
+
+async function changeDescription(meetingIdentifier, newDescription) {
+    await connectToDataBase();
+    const meeting = await Meeting.findById(meetingIdentifier);
+    meeting.description = newDescription;
+    meeting.save();
+}
+
+async function changeParticipants(meetingIdentifier, newParticipants) {
+    await connectToDataBase();
+    const meeting = await Meeting.findById(meetingIdentifier);
+    meeting.participants = newParticipants;
+    meeting.save();
+}
+
+async function changeMeetingStartAndEnd(meetingIdentifier, startingTime, endingTime) {
+    await connectToDataBase();
+}
+
+async function changeStartingTime(meetingIdentifier, startingTime) {
+    await connectToDataBase();
+}
+
+async function changeEndingTime(meetingIdentifier, endingTime) {
+    await connectToDataBase();
+}
+
+async function changePurpose(meetingIdentifier, newPurpose) {
+    await connectToDataBase();
+    const meeting = await Meeting.findById(meetingIdentifier);
+    //todo use the enum
+    meeting.purpose = newPurpose;
+    meeting.save();
+}
+
+// async function changeOffice(meetingIdentifier, office) {
+//     await connectToDataBase();
+// }
+
+async function changeWhiteBoard(meetingIdentifier, newBoard) {
+    await connectToDataBase();
+    const meeting = await Meeting.findById(meetingIdentifier);
+    meeting.whiteboard = newBoard;
+    meeting.save();
+}
+
+async function makeProjectorFalse(meetingIdentifier, newProjector) {
+    await connectToDataBase();
+    const meeting = await Meeting.findById(meetingIdentifier);
+    meeting.projector = newProjector;
+    meeting.save();
+
+}
+
+async function changeProjector(meetingIdentifier, newProjector){
 
 }
 
@@ -98,16 +172,24 @@ async function run() {
 
 
 module.exports = {
+    changeTitle,
+    changeDescription,
+    changeParticipants,
+    changeMeetingStartAndEnd,
+    changeStartingTime,
+    changeEndingTime,
+    changePurpose,
+    changeWhiteBoard,
+    makeProjectorFalse,
+    changeProjector,
     getMeetingById,
     createMeeting,
     getFirstTimeForMeeting,
     cancelChosenMeeting,
-    editChosenMeeting,
     getListAllMeetingInTimeSlot,
     getListOfAllMeetingInRoom
 }
 //update user:
-
 
 
 /*
