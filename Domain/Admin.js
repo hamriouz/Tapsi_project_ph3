@@ -1,6 +1,6 @@
 const organizerDomain = require('./Organizer')
-const meetingDataBase = require('../DataAccess/MeetingDataBase')
-
+// const meetingDataBase = require('../DataAccess/MeetingDataBase')
+const dataAccess = require('../DataAccess/Admin')
 let instance;
 
 class AdminDomain extends organizerDomain {
@@ -14,7 +14,8 @@ class AdminDomain extends organizerDomain {
 
     getMeetingInATimeSlot(startingTime, endingTime) {
         try{
-            return meetingDataBase.meetingsInTimeSlot(startingTime, endingTime)
+            const admin = dataAccess.getAdmin();
+            return admin.meetingsInTimeSlot(startingTime, endingTime)
         }catch (err){
             throw err
         }
@@ -22,8 +23,8 @@ class AdminDomain extends organizerDomain {
 
     getMeetingInARoom(roomIdentifier, date) {
         try{
-            return meetingDataBase.meetingsInRoom(roomIdentifier, date);
-
+            const admin = dataAccess.getAdmin();
+            return admin.meetingsInRoom(roomIdentifier, date)
         }catch (err){
             throw err
         }

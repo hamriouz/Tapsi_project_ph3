@@ -12,7 +12,7 @@ class OrganizerDomain {
         instanceOfOrganizerDomain = new OrganizerDomain();
         return instanceOfOrganizerDomain;
     }
-
+/*
     static async getUserStatus(email){
         //todo get the data with proto
 
@@ -20,14 +20,14 @@ class OrganizerDomain {
 
     static async getUserRole(email){
         //todo get the data with proto
-    }
+    }*/
 
     setNewMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerEmail) {
         //todo return meeting identifier
     }
 
     getSoonestAvailableTime(participants, duration, purpose, office, whiteboard, projector) {
-
+        //todo
     }
 
     async cancelAMeeting(meetingIdentifier) {
@@ -39,7 +39,7 @@ class OrganizerDomain {
     }
 
     editAMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector) {
-
+        //todo
     }
 }
 

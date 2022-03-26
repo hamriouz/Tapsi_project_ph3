@@ -28,7 +28,7 @@ class Admin extends Organizer{
         if (!(roomIdentifier && date))
             throw ("please fill all the information");
         try {
-            const admin = AdminDomain.getOrganizer(this.email);
+            const admin = AdminDomain.getOrganizer();
             return admin.getMeetingInARoom(roomIdentifier, date);
         }catch (err){
             throw err

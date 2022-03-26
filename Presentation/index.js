@@ -82,3 +82,5 @@ app.post('/RoomManagement/GetMeetingInRoom', Token.authenticateActor, AccessMana
 
     }
 })
+
+app.listen(2000)
