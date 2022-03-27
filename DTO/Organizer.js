@@ -13,28 +13,6 @@ class Organizer {
         return InstanceOfOrganizerDTO;
     }
 
-    static getRole(email) {
-        if (!(email))
-            throw ("please fill all the information");
-        try {
-            return "role";
-            //todo this part will be deleted
-        } catch (err) {
-            throw err
-        }
-    }
-
-    static getStatus(email) {
-        if (!(email))
-            throw ("please fill all the information");
-        try {
-            //todo this part will be deleted
-            return "status"
-        } catch (err) {
-            throw err
-        }
-    }
-
     setMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerEmail) {
 
         if (!(title && descriptions && participants && startingTime && endingTime && purpose && office) && (whiteboard !== undefined && projector !== undefined))
@@ -70,8 +48,6 @@ class Organizer {
     }
 
     async editMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, email) {
-        // if (!(meetingIdentifier && title && descriptions && participants && startingTime && endingTime && purpose && office && whiteboard && projector))
-        //     throw ("please fill all the information");
         try {
             const user = organizerDomain.getOrganizer();
             await user.editAMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, email)
