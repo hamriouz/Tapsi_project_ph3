@@ -9,7 +9,6 @@ async function connectToDataBase() {
     );
 }
 
-// run()
 async function getMeetingById(meetingID) {
     await connectToDataBase();
     return Meeting.findById(meetingID);
@@ -17,7 +16,6 @@ async function getMeetingById(meetingID) {
 
 async function createMeeting(title, description, participants, start, end, purpose, office, whiteboard, projector, roomIdentifier, organizerId) {
     await connectToDataBase();
-    //todo make the purpose enum
     const meeting = new Meeting({
         title: title,
         description: description,
@@ -72,14 +70,25 @@ async function changeParticipants(meetingIdentifier, newParticipants) {
 
 async function changeMeetingStartAndEnd(meetingIdentifier, startingTime, endingTime) {
     await connectToDataBase();
+    const meeting = await Meeting.findById(meetingIdentifier);
+    meeting.start = startingTime;
+    meeting.save();
+    meeting.end = endingTime;
+    meeting.save();
 }
 
 async function changeStartingTime(meetingIdentifier, startingTime) {
     await connectToDataBase();
+    const meeting = await Meeting.findById(meetingIdentifier);
+    meeting.start = startingTime;
+    meeting.save();
 }
 
 async function changeEndingTime(meetingIdentifier, endingTime) {
     await connectToDataBase();
+    const meeting = await Meeting.findById(meetingIdentifier);
+    meeting.end = endingTime;
+    meeting.save();
 }
 
 async function changePurpose(meetingIdentifier, newPurpose) {
@@ -90,10 +99,6 @@ async function changePurpose(meetingIdentifier, newPurpose) {
     meeting.save();
 }
 
-// async function changeOffice(meetingIdentifier, office) {
-//     await connectToDataBase();
-// }
-
 async function changeWhiteBoard(meetingIdentifier, newBoard) {
     await connectToDataBase();
     const meeting = await Meeting.findById(meetingIdentifier);
@@ -101,15 +106,11 @@ async function changeWhiteBoard(meetingIdentifier, newBoard) {
     meeting.save();
 }
 
-async function makeProjectorFalse(meetingIdentifier, newProjector) {
+async function changeProjector(meetingIdentifier, newProjector) {
     await connectToDataBase();
     const meeting = await Meeting.findById(meetingIdentifier);
     meeting.projector = newProjector;
     meeting.save();
-
-}
-
-async function changeProjector(meetingIdentifier, newProjector){
 
 }
 
@@ -132,46 +133,32 @@ async function getListOfAllMeetingInRoom(roomIdentifier, date) {
 
 }
 
-
-async function run() {
-    // create new user1
-    try {
-        const user = new Meeting({name: "Kyle", age: 26, hobbies: ["sdcdscf", "dasas", "Sdas "], address: {}})
-        await user.save()
-        console.log(user)
-        // create new user2
-        const user2 = await Meeting.create({name: "Kyleeee", age: 232})
-        console.log(user2)
-
-        //update user
-        user.name = "Sally"
-        user.save()
-        console.log(user)
-    } catch (err) {
-        console.log(err.message)
-    }
-
-    const user = await Meeting.find({name: "folan"})
-    const user2 = await Meeting.exists({name: "folan"})
-    const user3 = await Meeting.deleteOne({name: "folan"})
-    const user4 = await Meeting.where("name").equals("folan")
-    const user5 = await Meeting.where("age").gt(1212).where("name").equals("folan")
-    const user6 = await Meeting.where("name").equals("folan").limit(2).select("age")
-    user6[0].bestFriend = "23456789dfghj" // tuye quote id useri ke best friend mishe
-    await user6[0].save()
-    const user7 = await Meeting.where("age").gt(12).where("name").equals("kyle").populate("bestFriend")
-    const user8 = await Meeting.find().byName("kyle")
-    const user9 = await Meeting.findOne({name: "Kyle", email: "test.com"})
-    // console.log(user.namedEmail) -> Kyle <test.com>
-
+async function isWantedRoomFree(roomName, office, startingTime, endingTime){
+    const meeting = await Meeting.where("name").equals(roomName).where("office").equals(office).where("start").lte(endingTime).where("end").gte(startingTime).where("isCancelled").equals(false);
+    return meeting;
 
 }
 
-// getListAllMeetingInTimeSlot(123, 234).then()
-// getMeetingById("623ec5479c590458bc137ba6").then();
+/*
+async function isMashhadFree(office, startingTime, endingTime){}
 
+async function isShirazFree(office, startingTime, endingTime){}
+
+async function isKarajFree(office, startingTime, endingTime){}
+
+async function isQomFree(office, startingTime, endingTime){}
+
+async function isRashtFree(office, startingTime, endingTime){}
+
+async function isIsfahanFree(office, startingTime, endingTime){}
+
+async function isAhvazFree(office, startingTime, endingTime){}
+
+async function isBabolFree(office, startingTime, endingTime){}
+*/
 
 module.exports = {
+    isWantedRoomFree,
     changeTitle,
     changeDescription,
     changeParticipants,
@@ -180,7 +167,6 @@ module.exports = {
     changeEndingTime,
     changePurpose,
     changeWhiteBoard,
-    makeProjectorFalse,
     changeProjector,
     getMeetingById,
     createMeeting,
@@ -252,3 +238,38 @@ console.log(array3)
 const array4 = [...new Set(array3)]
 console.log(array4)
 */
+
+
+async function run() {
+    // create new user1
+    try {
+        const user = new Meeting({name: "Kyle", age: 26, hobbies: ["sdcdscf", "dasas", "Sdas "], address: {}})
+        await user.save()
+        console.log(user)
+        // create new user2
+        const user2 = await Meeting.create({name: "Kyleeee", age: 232})
+        console.log(user2)
+
+        //update user
+        user.name = "Sally"
+        user.save()
+        console.log(user)
+    } catch (err) {
+        console.log(err.message)
+    }
+
+    const user = await Meeting.find({name: "folan"})
+    const user2 = await Meeting.exists({name: "folan"})
+    const user3 = await Meeting.deleteOne({name: "folan"})
+    const user4 = await Meeting.where("name").equals("folan")
+    const user5 = await Meeting.where("age").gt(1212).where("name").equals("folan")
+    const user6 = await Meeting.where("name").equals("folan").limit(2).select("age")
+    user6[0].bestFriend = "23456789dfghj" // tuye quote id useri ke best friend mishe
+    await user6[0].save()
+    const user7 = await Meeting.where("age").gt(12).where("name").equals("kyle").populate("bestFriend")
+    const user8 = await Meeting.find().byName("kyle")
+    const user9 = await Meeting.findOne({name: "Kyle", email: "test.com"})
+    // console.log(user.namedEmail) -> Kyle <test.com>
+
+
+}

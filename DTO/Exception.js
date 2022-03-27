@@ -18,7 +18,12 @@ class Exception {
             case "No meeting found with the given identifier!"
             :
             case
-                "No room found with the given identifier!"
+            "No room found with the given identifier!"
+            :
+            case
+            "Meetings with less than 4 participants cant be held in rooms that have the projector feature.":
+            case
+            "No free room could be found"
             :
                 return 404;
             default:

@@ -4,10 +4,11 @@ const {
     changeParticipants,
     changeDescription,
     changeWhiteBoard,
-    makeProjectorFalse,
+    changeProjector,
     changePurpose,
     getMeetingById,
-    createMeeting
+    createMeeting,
+    isWantedRoomFree
 } = require('../DataBaseManager/script');
 let instanceOfDataAccessOrganizer;
 
@@ -70,6 +71,11 @@ class Organizer {
         }
     }
 
+    async isRoomFree(roomName, office, startingTime, endingTime){
+        let meetingInRoom = await isWantedRoomFree(roomName, office, startingTime, endingTime)
+        return !meetingInRoom;
+    }
+
     async changeMeetingStartAndEnd(meetingIdentifier,) {
 
     } //todo if the room isnt free in the new time slot
@@ -101,7 +107,7 @@ class Organizer {
     async changeProjector(meetingIdentifier, newProjector) {
         try {
             if (newProjector === false)
-                await makeProjectorFalse(meetingIdentifier, newProjector)
+                await changeProjector(meetingIdentifier, newProjector)
             else {
                 //todo check if the room already has a projector or not. if it doesnt the meeting's location has to change
             }

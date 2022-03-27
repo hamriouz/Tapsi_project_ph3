@@ -1,5 +1,7 @@
 // const MeetingDataBase = require('../DataAccess/MeetingDataBase');
-const DataAccessOrganizer = require('../DataAccess/Organizer')
+const DataAccessOrganizer = require('../DataAccess/Organizer');
+const getPurpose = require('../Enums/MeetingPurpose')
+const {MeetingPurpose} = require("../Enums/MeetingPurpose");
 let instanceOfOrganizerDomain;
 
 class OrganizerDomain {
@@ -14,16 +16,33 @@ class OrganizerDomain {
     }
 
     async setNewMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerEmail) {
-        let organizer = DataAccessOrganizer.getOrganizer();
-        //todo find the suitable room, if it exists get the id and create the meeting and if it doesnt exist throw an exception
-        if (/*room exists*/){
-            let roomIdentifier;
-            let organizerId;
-            await organizer.createNewMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, roomIdentifier, organizerId)
-            // organizer.setNewMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerEmail)
+        try {
+            let organizer = DataAccessOrganizer.getOrganizer();
+            let freeRoom;
+            if (purpose === MeetingPurpose.INTERVIEW || purpose === MeetingPurpose.PDCHAT) {
+                this.checkProjector(projector);
+               freeRoom  = await this.setPDChatOrInterview(organizer, startingTime, endingTime, office);
+            } else if (purpose === MeetingPurpose.GROOMING || purpose === MeetingPurpose.SPRINTPLANNING) {
+                if (participants.length > 8)
+                    freeRoom = await this.setTehran(organizer, startingTime, endingTime, office);
+                else
+                    freeRoom = await this.setGroomingOrSprint(organizer, startingTime, endingTime, office, participants);
+            } else if (purpose === MeetingPurpose.SPECREVIEW) {
+                freeRoom = await this.setTehran(organizer, startingTime, endingTime, office)
+            }
+            if (freeRoom){
+                //todo get room id and organizer id
+                let roomIdentifier;
+                let organizerId;
+                let meetingIdentifier = await organizer.createNewMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, roomIdentifier, organizerId)
+                return meetingIdentifier;
+            }else {
+            //todo reassign the rooms
+                }
         }
-        //todo save the meeting with the organizer's id because of changeOffice
-        //todo return meeting identifier
+         catch (err) {
+            throw err;
+        }
     }
 
     getSoonestAvailableTime(participants, specificDate, duration, purpose, office, whiteboard, projector) {
@@ -53,21 +72,12 @@ class OrganizerDomain {
                 if (meeting.participants.length === newParticipants.length) {
                     await organizer.changeParticipants(meetingIdentifier, newParticipants)
                     //todo get the room capacity and check if we need to change the room or not
-                }else {
+                    //todo cancel the meeting if re-allocation couldnt be done
+                } else {
                     await organizer.cancelChosenMeeting(meetingIdentifier);
                     let cancelledMeeting = organizer.getMeetingById(meetingIdentifier);
                     //todo throw a proper exception when the meeting couldn't be re-allocated
-                    this.setNewMeeting(
-                        cancelledMeeting.title,
-                        cancelledMeeting.description,
-                        newParticipants,
-                        cancelledMeeting.start,
-                        cancelledMeeting.end,
-                        cancelledMeeting.purpose,
-                        cancelledMeeting.office,
-                        cancelledMeeting.whiteboard,
-                        cancelledMeeting.projector,
-                        cancelledMeeting.organizer
+                    await this.setNewMeeting(cancelledMeeting.title, cancelledMeeting.description, newParticipants, cancelledMeeting.start, cancelledMeeting.end, cancelledMeeting.purpose, cancelledMeeting.office, cancelledMeeting.whiteboard, cancelledMeeting.projector, cancelledMeeting.organizer
                     );
                 }
             }
@@ -80,23 +90,14 @@ class OrganizerDomain {
             if (endingTime) {
                 //todo
             }
-            if (purpose)
+            if (purpose) {
+                purpose = getPurpose(purpose);
                 await organizer.changePurpose(meetingIdentifier, purpose)
+            }
             if (office) {
                 await organizer.cancelChosenMeeting(meetingIdentifier);
                 let cancelledMeeting = organizer.getMeetingById(meetingIdentifier)
-                this.setNewMeeting(
-                    cancelledMeeting.title,
-                    cancelledMeeting.description,
-                    cancelledMeeting.participants,
-                    cancelledMeeting.start,
-                    cancelledMeeting.end,
-                    cancelledMeeting.purpose,
-                    office,
-                    cancelledMeeting.whiteboard,
-                    cancelledMeeting.projector,
-                    cancelledMeeting.organizer
-                );
+                await this.setNewMeeting(cancelledMeeting.title, cancelledMeeting.description, cancelledMeeting.participants, cancelledMeeting.start, cancelledMeeting.end, cancelledMeeting.purpose, office, cancelledMeeting.whiteboard, cancelledMeeting.projector, cancelledMeeting.organizer);
             }
             if (whiteboard !== undefined)
                 await organizer.changeWhiteBoard(meetingIdentifier, whiteboard)
@@ -107,17 +108,52 @@ class OrganizerDomain {
         }
 
     }
+
+    async setPDChatOrInterview(organizer, startingTime, endingTime, office) {
+        let isQomFree = organizer.isRoomFree("Qom", office, startingTime, endingTime);
+        if (isQomFree)
+            return "Qom";
+         else {
+            let isRashtFree = organizer.isRoomFree("Rasht", office, startingTime, endingTime);
+            if (isRashtFree) {
+                return "Rasht";
+            } else {
+                let isIsfahanFree = organizer.isRoomFree("Isfahan", office, startingTime, endingTime);
+                if (isIsfahanFree) {
+                    return "Isfahan"
+                } else {
+                    let isAhvazFree = organizer.isRoomFree("Ahvaz", office, startingTime, endingTime);
+                    if (isAhvazFree) {
+                        return "Ahvaz"
+                    } else {
+                        let isBabolFree = organizer.isRoomFree("Qom", office, startingTime, endingTime);
+                        if (isBabolFree) {
+                            return "Babol"
+                        } else throw "No free room could be found"
+                    }
+                }
+            }
+        }
+    }
+
+    async setTehran(organizer, startingTime, endingTime, office) {
+        let isTehranFree = organizer.isRoomFree("Tehran", office, startingTime, endingTime);
+        if (isTehranFree)
+            return "Tehran"
+        else throw "No free room could be found"
+    }
+
+    async setGroomingOrSprint(organizer, startingTime, endingTime, office, participants) {
+        //todo throw exception if no room could be found
+        //if 4 -> karaj shiraz mashhad
+        //if 5 or 6 shiraz mashhad
+        //if 7 or more mashhad
+    }
+
+    checkProjector(projector) {
+        if (projector === true)
+            throw "Meetings with less than 4 participants cant be held in rooms that have the projector feature."
+    }
 }
 
 module.exports = OrganizerDomain
-
-
-/*
-    static async getUserStatus(email){
-        //todo get the data with proto
-
-    }
-
-    static async getUserRole(email){
-        //todo get the data with proto
-    }*/
