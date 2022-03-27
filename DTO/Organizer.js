@@ -58,23 +58,23 @@ class Organizer {
         }
     }
 
-    async cancelMeeting(meetingIdentifier) {
-        if (!(meetingIdentifier))
+    async cancelMeeting(meetingIdentifier, email) {
+        if (!(meetingIdentifier && email))
             throw ("please fill all the information");
         try {
             const user = organizerDomain.getOrganizer();
-            await user.cancelAMeeting(meetingIdentifier)
+            await user.cancelAMeeting(meetingIdentifier, email)
         } catch (err) {
             throw err
         }
     }
 
-    async editMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector) {
+    async editMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, email) {
         // if (!(meetingIdentifier && title && descriptions && participants && startingTime && endingTime && purpose && office && whiteboard && projector))
         //     throw ("please fill all the information");
         try {
             const user = organizerDomain.getOrganizer();
-            await user.editAMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector)
+            await user.editAMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, email)
         } catch (err) {
             throw err
         }

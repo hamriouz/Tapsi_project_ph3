@@ -30,8 +30,9 @@ class OrganizerDomain {
         //todo
     }
 
-    async cancelAMeeting(meetingIdentifier) {
+    async cancelAMeeting(meetingIdentifier, email) {
         try {
+            //todo check if the user is the organizer or admin
             let organizer = DataAccessOrganizer.getOrganizer();
             await organizer.cancelChosenMeeting(meetingIdentifier)
         } catch (err) {
@@ -39,7 +40,8 @@ class OrganizerDomain {
         }
     }
 
-    async editAMeeting(meetingIdentifier, title, descriptions, newParticipants, startingTime, endingTime, purpose, office, whiteboard, projector) {
+    async editAMeeting(meetingIdentifier, title, descriptions, newParticipants, startingTime, endingTime, purpose, office, whiteboard, projector, email) {
+        //todo check if the user is the organizer of the meeting
         try {
             let organizer = DataAccessOrganizer.getOrganizer();
             if (title)

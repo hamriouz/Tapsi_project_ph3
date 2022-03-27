@@ -36,9 +36,8 @@ app.post('/RoomManagement/GetFirstAvailableTime', Token.authenticateActor, Acces
 app.post('/RoomManagement/CancelMeeting', Token.authenticateActor, AccessManager.validateAccess, async (req, res) => {
     const { meetingIdentifier } = req.body
     try {
-        //todo if the user is an admin, they dont need to be the organizer otherwise it must be checked!
         const organizer = OrganizerDTO.getOrganizer();
-        await organizer.cancelMeeting(meetingIdentifier);
+        await organizer.cancelMeeting(meetingIdentifier, req.email);
         res.status(202).send("The selected meeting was successfully cancelled");
     }catch (err){
         res.status(Exception.getStatusByExceptionMessage(err)).send(err);
@@ -49,9 +48,8 @@ app.post('/RoomManagement/CancelMeeting', Token.authenticateActor, AccessManager
 app.post('/RoomManagement/EditMeeting', Token.authenticateActor, AccessManager.validateAccess, async (req, res) => {
     const { meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector } = req.body
     try {
-        //todo check if the user is the organizer of the meeting
         const organizer = OrganizerDTO.getOrganizer();
-        await organizer.editMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector);
+        await organizer.editMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, req.email);
         res.status(202).send("The selected meeting was successfully edited!");
     }catch (err){
         res.status(Exception.getStatusByExceptionMessage(err)).send(err);
