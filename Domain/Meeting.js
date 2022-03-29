@@ -1,18 +1,21 @@
-/*
-const DataAccessOrganizer = require('../DataAccess/Organizer');
+const DataAccessOrganizer = require("../DataAccess/Organizer");
 const {MeetingPurpose} = require("../Util/Enums/MeetingPurpose");
 const {cancelChosenMeeting} = require("../DataAccess/DataBaseManager/script");
-let instanceOfOrganizerDomain;
+const dataAccess = require("../DataAccess/Admin");
 
-class OrganizerDomain {
-    constructor() {
-    }
+class Meeting {
+    constructor(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerId) {
+        this.title = title;
+        this.description = descriptions;
+        this.participants = participants;
+        this.startingTime = startingTime;
+        this.endingTime = endingTime;
+        this.purpose = purpose;
+        this.office = office;
+        this.whiteboard = whiteboard;
+        this.projector = projector;
+        this.organizerId = organizerId;
 
-    static getOrganizer() {
-        if (instanceOfOrganizerDomain)
-            return instanceOfOrganizerDomain;
-        instanceOfOrganizerDomain = new OrganizerDomain();
-        return instanceOfOrganizerDomain;
     }
 
     async setNewMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerId) {
@@ -41,28 +44,26 @@ class OrganizerDomain {
     }
 
     getSoonestAvailableTime(participants, specificDate, duration, purpose, office, whiteboard, projector) {
-        if (purpose === MeetingPurpose.SPECREVIEW || participants.length > 8){
+        if (purpose === MeetingPurpose.SPECREVIEW || participants.length > 8) {
 
-        }
-        else if (purpose === MeetingPurpose.PDCHAT || purpose === MeetingPurpose.INTERVIEW){
+        } else if (purpose === MeetingPurpose.PDCHAT || purpose === MeetingPurpose.INTERVIEW) {
             let numberOfParticipants = participants.length;
             switch (numberOfParticipants) {
                 case 4:
-                    //Karaj
-                    //todo
+                //Karaj
+                //todo
                 case 5:
                 case 6:
                 case 7:
-                    //Shiraz
-                    //todo
+                //Shiraz
+                //todo
                 case 8:
                     //Mashhad
                     //todo
                     break;
             }
 
-        }
-        else if (purpose === MeetingPurpose.GROOMING || purpose === MeetingPurpose.SPRINTPLANNING){
+        } else if (purpose === MeetingPurpose.GROOMING || purpose === MeetingPurpose.SPRINTPLANNING) {
 
         }
     }
@@ -86,27 +87,27 @@ class OrganizerDomain {
         let meeting = organizer.getMeetingById(meetingIdentifier);
         if (organizerIdentifier !== meeting.organizer)
             throw "only the meeting organizer can edit a meeting"
-            try {
-                let organizer = DataAccessOrganizer.getOrganizer();
-                if (title)
-                    await organizer.changeTitle(meetingIdentifier, title)
-                if (descriptions)
-                    await organizer.changeDescription(meetingIdentifier, descriptions)
-                if (newParticipants)
-                    await this.editParticipants(organizer, meetingIdentifier, newParticipants)
-                if (startingTime || endingTime)
-                    await this.editTime(organizer, meetingIdentifier, startingTime, endingTime);
-                if (purpose)
-                    await organizer.changePurpose(meetingIdentifier, purpose)
-                if (office)
-                    await this.editOffice(organizer, meetingIdentifier, office)
-                if (whiteboard !== undefined)
-                    await organizer.changeWhiteBoard(meetingIdentifier, whiteboard)
-                if (projector !== undefined)
-                    await organizer.changeProjector(meetingIdentifier, projector)
-            } catch (err) {
-                throw err;
-            }
+        try {
+            let organizer = DataAccessOrganizer.getOrganizer();
+            if (title)
+                await organizer.changeTitle(meetingIdentifier, title)
+            if (descriptions)
+                await organizer.changeDescription(meetingIdentifier, descriptions)
+            if (newParticipants)
+                await this.editParticipants(organizer, meetingIdentifier, newParticipants)
+            if (startingTime || endingTime)
+                await this.editTime(organizer, meetingIdentifier, startingTime, endingTime);
+            if (purpose)
+                await organizer.changePurpose(meetingIdentifier, purpose)
+            if (office)
+                await this.editOffice(organizer, meetingIdentifier, office)
+            if (whiteboard !== undefined)
+                await organizer.changeWhiteBoard(meetingIdentifier, whiteboard)
+            if (projector !== undefined)
+                await organizer.changeProjector(meetingIdentifier, projector)
+        } catch (err) {
+            throw err;
+        }
     }
 
     async editTime(organizer, meetingIdentifier, startingTime, endingTime) {
@@ -227,12 +228,23 @@ class OrganizerDomain {
         return roomIdentifier;
     }
 
-    // async getOrganizerID(email) {
-    //     let organizer = DataAccessOrganizer.getOrganizer();
-    //     let userId = await organizer.getUserIdWithEmail(email);
-    //     return userId;
-    //
-    // }
+    getMeetingInATimeSlot(startingTime, endingTime) {
+        try {
+            const admin = dataAccess.getAdmin();
+            return admin.meetingsInTimeSlot(startingTime, endingTime)
+        } catch (err) {
+            throw err
+        }
+    }
+
+    getMeetingInARoom(roomIdentifier, date) {
+        try {
+            const admin = dataAccess.getAdmin();
+            return admin.meetingsInRoom(roomIdentifier, date)
+        } catch (err) {
+            throw err
+        }
+    }
 }
 
-module.exports = OrganizerDomain*/
+module.exports = Meeting

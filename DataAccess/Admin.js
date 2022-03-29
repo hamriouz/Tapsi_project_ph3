@@ -1,6 +1,6 @@
 const organizer = require('./Organizer');
-const {getListAllMeetingInTimeSlot} = require('../DataBaseManager/script');
-const {getListOfAllMeetingInRoom} = require('../DataBaseManager/script');
+const {getListAllMeetingInTimeSlot} = require('./DataBaseManager/script');
+const {getListOfAllMeetingInRoom} = require('./DataBaseManager/script');
 
 let instanceOfDataAccessAdmin;
 

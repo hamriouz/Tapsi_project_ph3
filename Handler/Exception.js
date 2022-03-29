@@ -6,6 +6,12 @@ class Exception {
             :
                 return 400;
             case
+            "only the meeting organizer or an admin can cancel a meeting"
+            :
+            case "only the meeting organizer can edit a meeting"
+            :
+                return 401;
+            case
             "Invalid input!"
             :
                 return 403;

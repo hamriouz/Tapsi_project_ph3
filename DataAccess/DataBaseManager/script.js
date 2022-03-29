@@ -46,6 +46,13 @@ async function cancelChosenMeeting(meetingIdentifier) {
 
 }
 
+async function removeCancellation(meetingIdentifier) {
+    await connectToDataBase();
+    const meeting = await Meeting.findById(meetingIdentifier);
+    meeting.isCancelled = false;
+    meeting.save();
+}
+
 async function changeTitle(meetingIdentifier, newTitle) {
     await connectToDataBase();
     const meeting = await Meeting.findById(meetingIdentifier);
@@ -94,7 +101,6 @@ async function changeEndingTime(meetingIdentifier, endingTime) {
 async function changePurpose(meetingIdentifier, newPurpose) {
     await connectToDataBase();
     const meeting = await Meeting.findById(meetingIdentifier);
-    //todo use the enum
     meeting.purpose = newPurpose;
     meeting.save();
 }
@@ -116,9 +122,9 @@ async function changeProjector(meetingIdentifier, newProjector) {
 
 async function getListAllMeetingInTimeSlot(startingTime, endingTime) {
     await connectToDataBase();
-    let firstSlot = await Meeting.where("start").lte(startingTime).where("end").gt(startingTime);
-    let secondSlot = await Meeting.where("start").lt(endingTime).where("end").gte(endingTime);
-    let thirdSlot = await Meeting.where("start").gte(startingTime).where("end").lte(endingTime);
+    let firstSlot = await Meeting.where("start").lte(startingTime).where("end").gt(startingTime).where("isCancelled").equals(false);
+    let secondSlot = await Meeting.where("start").lt(endingTime).where("end").gte(endingTime).where("isCancelled").equals(false);
+    let thirdSlot = await Meeting.where("start").gte(startingTime).where("end").lte(endingTime).where("isCancelled").equals(false);
     let firstAndSecond = [...firstSlot, ...secondSlot];
     let allTogether = [...firstAndSecond, thirdSlot];
     return [...new Set(allTogether)];
@@ -128,34 +134,16 @@ async function getListOfAllMeetingInRoom(roomIdentifier, date) {
     await connectToDataBase();
     let startingDate = date - (date % (3600 * 24 * 1000)) - 1;
     let endingDate = startingDate + (3600 * 24 * 1000) + 1;
-    const meetingsInRoom = await Meeting.where("start").gt(startingDate).where("end").lt(endingDate).where("roomIdentifier").equals(roomIdentifier);
+    const meetingsInRoom = await Meeting.where("start").gt(startingDate).where("end").lt(endingDate).where("roomIdentifier").equals(roomIdentifier).where("isCancelled").equals(false);
     return meetingsInRoom;
 
 }
 
-async function isWantedRoomFree(roomName, office, startingTime, endingTime){
+async function isWantedRoomFree(roomName, office, startingTime, endingTime) {
     const meeting = await Meeting.where("name").equals(roomName).where("office").equals(office).where("start").lte(endingTime).where("end").gte(startingTime).where("isCancelled").equals(false);
     return meeting;
 
 }
-
-/*
-async function isMashhadFree(office, startingTime, endingTime){}
-
-async function isShirazFree(office, startingTime, endingTime){}
-
-async function isKarajFree(office, startingTime, endingTime){}
-
-async function isQomFree(office, startingTime, endingTime){}
-
-async function isRashtFree(office, startingTime, endingTime){}
-
-async function isIsfahanFree(office, startingTime, endingTime){}
-
-async function isAhvazFree(office, startingTime, endingTime){}
-
-async function isBabolFree(office, startingTime, endingTime){}
-*/
 
 module.exports = {
     isWantedRoomFree,
@@ -173,7 +161,8 @@ module.exports = {
     getFirstTimeForMeeting,
     cancelChosenMeeting,
     getListAllMeetingInTimeSlot,
-    getListOfAllMeetingInRoom
+    getListOfAllMeetingInRoom,
+    removeCancellation
 }
 //update user:
 

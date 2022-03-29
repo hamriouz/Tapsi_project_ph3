@@ -1,3 +1,4 @@
+/*
 const organizerDomain = require('./Organizer')
 const dataAccess = require('../DataAccess/Admin')
 
@@ -32,4 +33,4 @@ class AdminDomain extends organizerDomain {
 
 }
 
-module.exports = AdminDomain
+module.exports = AdminDomain*/

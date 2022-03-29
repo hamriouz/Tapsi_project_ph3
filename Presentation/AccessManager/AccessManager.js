@@ -1,5 +1,5 @@
 const ApiGroups = require('./ApiGroups');
-const UserDomain = require("../DTO/Organizer");
+const UserDomain = require("../../Handler/Organizer");
 
 class AccessManager {
     static validateAccess(req, res, next) {

@@ -8,8 +8,8 @@ const {
     changePurpose,
     getMeetingById,
     createMeeting,
-    isWantedRoomFree
-} = require('../DataBaseManager/script');
+    isWantedRoomFree, removeCancellation
+} = require('./DataBaseManager/script');
 let instanceOfDataAccessOrganizer;
 
 class Organizer {
@@ -34,6 +34,14 @@ class Organizer {
     async cancelChosenMeeting(meetingIdentifier) {
         try {
             await cancelChosenMeeting(meetingIdentifier);
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async removeCancellation(meetingIdentifier){
+        try {
+            await removeCancellation(meetingIdentifier);
         } catch (err) {
             throw err;
         }
@@ -76,7 +84,7 @@ class Organizer {
         return !meetingInRoom;
     }
 
-    async changeMeetingStartAndEnd(meetingIdentifier,) {
+/*    async changeMeetingStartAndEnd(meetingIdentifier,) {
 
     } //todo if the room isnt free in the new time slot
 
@@ -86,7 +94,7 @@ class Organizer {
 
     async changeEndingTime(meetingIdentifier,) {
 
-    } // todo if the room isnt
+    } // todo if the room isnt*/
 
     async changePurpose(meetingIdentifier, newPurpose) {
         try {
@@ -116,7 +124,13 @@ class Organizer {
         }
     } // todo if the room doesnt already have a projector and want to change not wanting to wanting
 
+    getUserIdWithEmail(email){
+        //todo return user identifier
+    }
 
+    getRoomIdentifierWithNameOffice(name, office){
+        //todo return room identifier
+    }
 }
 
 module.exports = Organizer;

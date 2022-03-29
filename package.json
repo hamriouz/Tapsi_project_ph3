@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "devStart": "nodemon DataBaseManager/script.js"
+    "devStart": "nodemon DataAccess/DataBaseManager/script.js"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",

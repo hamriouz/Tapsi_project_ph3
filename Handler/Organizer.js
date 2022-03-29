@@ -25,7 +25,7 @@ class Organizer {
         }
     }
 
-    getFirstAvailableTime(participants, specificDate, duration, purpose, office, whiteboard, projector) {
+    async getFirstAvailableTime(participants, specificDate, duration, purpose, office, whiteboard, projector) {
         if (!(participants && duration && purpose && office) && (whiteboard !== undefined && projector !== undefined))
             throw ("please fill all the information");
         try {
@@ -36,26 +36,25 @@ class Organizer {
         }
     }
 
-    async cancelMeeting(meetingIdentifier, email) {
-        if (!(meetingIdentifier && email))
+    async cancelMeeting(meetingIdentifier, email, role) {
+        if (!(meetingIdentifier && email && role))
             throw ("please fill all the information");
         try {
             const user = organizerDomain.getOrganizer();
-            await user.cancelAMeeting(meetingIdentifier, email)
+            await user.cancelAMeeting(meetingIdentifier, email, role)
         } catch (err) {
             throw err
         }
     }
 
-    async editMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, email) {
-        try {
-            const user = organizerDomain.getOrganizer();
-            await user.editAMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, email)
-        } catch (err) {
-            throw err
-        }
-    }
-
+    // async editMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id) {
+    //     try {
+    //         const user = organizerDomain.getOrganizer();
+    //         await user.editAMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id)
+    //     } catch (err) {
+    //         throw err
+    //     }
+    // }
 }
 
 module.exports = Organizer
