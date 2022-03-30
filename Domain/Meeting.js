@@ -35,8 +35,9 @@ class Meeting {
 
     static async getMeetingByIdentifier(meetingIdentifier) {
         try {
-            //todo bayad new she meeting ba etelaati ke migire
-            return await dataAccess.getMeetingByIdentifier(meetingIdentifier)
+
+            const meetingData = await dataAccess.getMeetingByIdentifier(meetingIdentifier)
+            return new Meeting(meetingData.title, meetingData.description, meetingData.participants, meetingData.startingTime, meetingData.endingTime, meetingData.purpose, meetingData.office, meetingData.whiteboard, meetingData.projector, meetingData.roomIdentifier, meetingData.organizerId)
         } catch (err) {
             throw err;
         }
