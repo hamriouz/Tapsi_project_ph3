@@ -8,8 +8,6 @@ const {
     getSoonestTimeInSmallRooms,
     editTime,
     editParticipants,
-    editPurpose,
-    editOffice,
     editProjector
 } = require('./Functions')
 const DataAccess = require("../DataAccess/Meeting");
