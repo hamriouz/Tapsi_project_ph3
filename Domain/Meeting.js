@@ -43,12 +43,12 @@ class Meeting {
         }
     }
 
-    async static setNewMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id) {
+    async static setNewMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerId, isBeingEdited) {
         try {
             let meetingIdentifier;
-            if (purpose === MeetingPurpose.INTERVIEW || purpose === MeetingPurpose.PDCHAT) meetingIdentifier = setMeetingWithFewParticipants(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id)
-            else if (purpose === MeetingPurpose.SPECREVIEW || participants.length > 8) meetingIdentifier = setAMeetingInTehranRoom(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id)
-            else if (purpose === MeetingPurpose.SPRINTPLANNING || purpose === MeetingPurpose.GROOMING) meetingIdentifier = setMeetingWithManyParticipants(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id)
+            if (purpose === MeetingPurpose.INTERVIEW || purpose === MeetingPurpose.PDCHAT) meetingIdentifier = setMeetingWithFewParticipants(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerId, isBeingEdited)
+            else if (purpose === MeetingPurpose.SPECREVIEW || participants.length > 8) meetingIdentifier = setAMeetingInTehranRoom(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerId, isBeingEdited)
+            else if (purpose === MeetingPurpose.SPRINTPLANNING || purpose === MeetingPurpose.GROOMING) meetingIdentifier = setMeetingWithManyParticipants(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerId, isBeingEdited)
             return meetingIdentifier;
         } catch (err) {
             throw err
@@ -58,9 +58,9 @@ class Meeting {
     async static getSoonestAvailableTime(participants, specificDate, duration, purpose, office, whiteboard, projector) {
         try {
             let soonestAvailableTime;
-            if (purpose === MeetingPurpose.SPECREVIEW || participants.length > 8) soonestAvailableTime = getSoonestTimeInTehranRoom(participants, specificDate, duration, purpose, office, whiteboard, projector);
-            else if (purpose === MeetingPurpose.PDCHAT || purpose === MeetingPurpose.INTERVIEW) soonestAvailableTime = getSoonestTimeInSmallRooms(participants, specificDate, duration, purpose, office, whiteboard, projector);
-            else if (purpose === MeetingPurpose.GROOMING || purpose === MeetingPurpose.SPRINTPLANNING) soonestAvailableTime = getSoonestTimeInMediumRooms(participants, specificDate, duration, purpose, office, whiteboard, projector);
+            if (purpose === MeetingPurpose.SPECREVIEW || participants.length > 8) soonestAvailableTime = await getSoonestTimeInTehranRoom(participants, specificDate, duration, purpose, office, whiteboard, projector);
+            else if (purpose === MeetingPurpose.PDCHAT || purpose === MeetingPurpose.INTERVIEW) soonestAvailableTime = await getSoonestTimeInSmallRooms(participants, specificDate, duration, purpose, office, whiteboard, projector);
+            else if (purpose === MeetingPurpose.GROOMING || purpose === MeetingPurpose.SPRINTPLANNING) soonestAvailableTime = await getSoonestTimeInMediumRooms(participants, specificDate, duration, purpose, office, whiteboard, projector);
             return soonestAvailableTime;
         } catch (err) {
             throw err
@@ -88,32 +88,33 @@ class Meeting {
             }
             if (descriptions) {
                 this.description = descriptions;
-                await dataAccess.changeDescription(meetingIdentifier, descriptions)
+                await dataAccess.changeDescription(meetingIdentifier, descriptions);
             }
             if (newParticipants) {
-                await editParticipants(meetingIdentifier, newParticipants)
-                this.participants = newParticipants
+                await editParticipants(meetingIdentifier,this.participants, newParticipants);
+                this.participants = newParticipants;
             }
             if (startingTime || endingTime) {
                 await editTime(meetingIdentifier, startingTime, endingTime);
                 if (startingTime)
                     this.startingTime = startingTime;
                 if (endingTime)
-                    this.endingTime = endingTime
+                    this.endingTime = endingTime;
             }
             if (purpose) {
-                await editPurpose(meetingIdentifier, purpose)
+                await dataAccess.changePurpose(meetingIdentifier, purpose);
                 this.purpose = purpose;
             }
-            if (office)
-                await editOffice(meetingIdentifier, office);
-
             if (whiteboard !== undefined) {
-                await dataAccess.changeWhiteBoard(meetingIdentifier, whiteboard)
+                await dataAccess.changeWhiteBoard(meetingIdentifier, whiteboard);
             }
             if (projector !== undefined) {
-                await editProjector(meetingIdentifier, projector)
+                await editProjector(meetingIdentifier, projector);
                 this.projector = projector;
+            }
+            if (office) {
+                await Meeting.setNewMeeting(this.title, this.description, this.participants, this.startingTime, this.endingTime, this.purpose, office, this.whiteboard, this.projector, this.organizerId, false);
+                await this.cancelAMeeting(meetingIdentifier, id, "organizer");
             }
         } catch (err) {
             throw err;

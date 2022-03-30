@@ -1,53 +1,137 @@
+const {isWantedRoomFree, cancelChosenMeeting, changeProjector} = require("../DataAccess/DataBaseManager/script");
+const DataAccess = require('../DataAccess/Meeting');
+const dataAccess = DataAccess.getInstance();
+const Meeting = require('../Domain/Meeting');
+
 module.exports = {
-    setMeetingWithFewParticipants(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id) {
+    setMeetingWithFewParticipants(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id, isBeingEdited) {
+        //todo if is being edited must throw an exception relevant to the case
+    },
+
+    setMeetingWithManyParticipants(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id, isBeingEdited) {
+        //todo if is being edited must throw an exception relevant to the case
 
     },
 
-    setMeetingWithManyParticipants(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id) {
+    setAMeetingInTehranRoom(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id, isBeingEdited) {
+        //todo if is being edited must throw an exception relevant to the case
+
     },
 
-    setAMeetingInTehranRoom(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id) {
-    },
-
-    getSoonestTimeInSmallRooms(participants, specificDate, duration, purpose, office, whiteboard, projector){},
-
-    getSoonestTimeInMediumRooms(participants, specificDate, duration, purpose, office, whiteboard, projector){
-        let numberOfParticipants = participants.length;
-        switch (numberOfParticipants) {
-            case 4:
-            //Karaj
-            //todo
-            case 5:
-            case 6:
-            case 7:
-            //Shiraz
-            //todo
-            case 8:
-                //Mashhad
-                //todo
-                break;
+    async getSoonestTimeInSmallRooms(participants, specificDate, duration, purpose, office, whiteboard, projector) {
+        if (projector === true)
+            throw 'there are no small rooms with the projector feature'
+        if (!specificDate) {
+            const d = new Date();
+            specificDate = d.getTime();
+        }
+        let endingSpecificTime = specificDate + duration
+        while (true) {
+            let isBabolFree = await isWantedRoomFree("Babol", office, specificDate, endingSpecificTime);
+            let isAhvazFree = await isWantedRoomFree("Ahvaz", office, specificDate, endingSpecificTime);
+            let isIsfahanFree = await isWantedRoomFree("Isfahan", office, specificDate, endingSpecificTime);
+            let isRashtFree = await isWantedRoomFree("Rasht", office, specificDate, endingSpecificTime);
+            let isQomFree = await isWantedRoomFree("Qom", office, specificDate, endingSpecificTime);
+            let isKarajFree = await isWantedRoomFree("Karaj", office, specificDate, endingSpecificTime);
+            if (participants.length > 3)
+                if (isKarajFree)
+                    return specificDate;
+                else if (isBabolFree || isAhvazFree || isIsfahanFree || isRashtFree || isQomFree || isKarajFree) return specificDate;
+                else {
+                    specificDate += (15 * 1000 * 60);
+                    endingSpecificTime += (15 * 1000 * 60);
+                }
         }
     },
 
-    getSoonestTimeInTehranRoom(participants, specificDate, duration, purpose, office, whiteboard, projector){},
-
-    editTime(startingTime, endingTime){},
-
-    editParticipants(){},
-
-    editPurpose(){},
-
-    editOffice(){
-        //todo cancel the previous meeting and set a new one
+    async getSoonestTimeInMediumRooms(participants, specificDate, duration, purpose, office, whiteboard, projector) {
+        if (!specificDate) {
+            const d = new Date();
+            specificDate = d.getTime();
+        }
+        let numberOfParticipants = participants.length;
+        let endSpecificDate = specificDate + duration;
+        while (true) {
+            let isKarajFree = await isWantedRoomFree("Karaj", office, specificDate, endSpecificDate);
+            let isShirazFree = await isWantedRoomFree("Shiraz", office, specificDate, endSpecificDate);
+            let isMashhadFree = await isWantedRoomFree("Mashhad", office, specificDate, endSpecificDate);
+            switch (numberOfParticipants) {
+                case 4:
+                    if (isKarajFree)
+                        return specificDate;
+                case 5:
+                case 6:
+                case 7:
+                    if (isShirazFree)
+                        return specificDate;
+                case 8:
+                    if (isMashhadFree)
+                        return specificDate;
+                    break;
+            }
+            specificDate += (15 * 1000 * 60);
+            endSpecificDate += (15 * 1000 * 60);
+        }
     },
 
-    editProjector(){}
+    async getSoonestTimeInTehranRoom(participants, specificDate, duration, purpose, office, whiteboard, projector) {
+        if (!specificDate) {
+            const d = new Date();
+            specificDate = d.getTime();
+        }
+        let endSpecificDate = specificDate + duration;
+        while (true) {
+            let isTehranFree = await isWantedRoomFree("Tehran", office, specificDate, endSpecificDate);
+            if (isTehranFree) return specificDate;
+            else {
+                specificDate += (15 * 1000 * 60);
+                endSpecificDate += (15 * 1000 * 60);
+            }
+        }
+    },
+
+    async editTime(meetingIdentifier, startingTime, endingTime) {
+        const meeting = Meeting.getMeetingByIdentifier(meetingIdentifier);
+        await cancelChosenMeeting(meetingIdentifier);
+        if (!startingTime)
+            startingTime = meeting.start;
+        if (!endingTime)
+            endingTime = meeting.end;
+        await Meeting.setNewMeeting(meeting.title, meeting.description, meeting.participants, startingTime, endingTime, meeting.purpose, meeting.office, meeting.whiteboard, meeting.projector, meeting.organizer, true);
+
+    },
+
+    async editParticipants(meetingIdentifier, oldParticipant, newParticipants) {
+        const meeting = Meeting.getMeetingByIdentifier(meetingIdentifier);
+        const meetingCapacity = this.getMeetingRoomCapacity(meeting.roomIdentifier);
+        if (oldParticipant.length === newParticipants.length || newParticipants.length <= meetingCapacity) await dataAccess.changeParticipants(meetingIdentifier, newParticipants)
+        else {
+            try {
+                await cancelChosenMeeting(meetingIdentifier);
+                await Meeting.setNewMeeting(meeting.title, meeting.description, newParticipants, meeting.start, meeting.end, meeting.purpose, meeting.office, meeting.whiteboard, meeting.projector, meeting.organizer, true);
+            } catch (err) {
+                throw err;
+            }
+        }
+    },
+
+    async editProjector(meetingIdentifier, projector) {
+        const meeting = Meeting.getMeetingByIdentifier(meetingIdentifier);
+        if (meeting.participants.length === 3)
+            throw 'unable to edit the chosen attribute'
+        else await changeProjector(meetingIdentifier, projector);
+    },
+
+    getMeetingRoomCapacity(meetingIdentifier) {
+        let roomCapacity
+        //todo
+        return roomCapacity;
+    },
+
+    reorganize(){}
 
 
 }
-
-
-
 
 
 /*    async static setNewMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerId) {
@@ -75,95 +159,8 @@ module.exports = {
         }
     }
 
-    async static getSoonestAvailableTime(participants, specificDate, duration, purpose, office, whiteboard, projector) {
-        if (purpose === MeetingPurpose.SPECREVIEW || participants.length > 8) {
-
-        } else if (purpose === MeetingPurpose.PDCHAT || purpose === MeetingPurpose.INTERVIEW) {
-            let numberOfParticipants = participants.length;
-            switch (numberOfParticipants) {
-                case 4:
-                //Karaj
-                //todo
-                case 5:
-                case 6:
-                case 7:
-                //Shiraz
-                //todo
-                case 8:
-                    //Mashhad
-                    //todo
-                    break;
-            }
-
-        } else if (purpose === MeetingPurpose.GROOMING || purpose === MeetingPurpose.SPRINTPLANNING) {
-
-        }
-    }
 
 
-
-    async editAMeeting(meetingIdentifier, title, descriptions, newParticipants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerIdentifier) {
-        let mee = meetingDataAccess.getOrganizer();
-        // let organizerIdentifier = this.getOrganizerID(email);
-        let meeting = organizer.getMeetingById(meetingIdentifier);
-        if (organizerIdentifier !== meeting.organizer)
-            throw "only the meeting organizer can edit a meeting"
-        try {
-            let organizer = meetingDataAccess.getOrganizer();
-            if (title)
-                await organizer.changeTitle(meetingIdentifier, title)
-            if (descriptions)
-                await organizer.changeDescription(meetingIdentifier, descriptions)
-            if (newParticipants)
-                await this.editParticipants(organizer, meetingIdentifier, newParticipants)
-            if (startingTime || endingTime)
-                await this.editTime(organizer, meetingIdentifier, startingTime, endingTime);
-            if (purpose)
-                await organizer.changePurpose(meetingIdentifier, purpose)
-            if (office)
-                await this.editOffice(organizer, meetingIdentifier, office)
-            if (whiteboard !== undefined)
-                await organizer.changeWhiteBoard(meetingIdentifier, whiteboard)
-            if (projector !== undefined)
-                await organizer.changeProjector(meetingIdentifier, projector)
-        } catch (err) {
-            throw err;
-        }
-    }
-
-    async editTime(organizer, meetingIdentifier, startingTime, endingTime) {
-        await cancelChosenMeeting(meetingIdentifier);
-        if (startingTime && endingTime) {
-            //todo
-        }
-        if (startingTime) {
-
-        }
-        if (endingTime) {
-            //todo
-        }
-    }
-
-    async editOffice(organizer, meetingIdentifier, office) {
-        await organizer.cancelChosenMeeting(meetingIdentifier);
-        let cancelledMeeting = organizer.getMeetingById(meetingIdentifier)
-        await this.setNewMeeting(cancelledMeeting.title, cancelledMeeting.description, cancelledMeeting.participants, cancelledMeeting.start, cancelledMeeting.end, cancelledMeeting.purpose, office, cancelledMeeting.whiteboard, cancelledMeeting.projector, cancelledMeeting.organizer);
-    }
-
-    async editParticipants(organizer, meetingIdentifier, newParticipants) {
-        let meeting = organizer.getMeetingById(meetingIdentifier);
-        if (meeting.participants.length === newParticipants.length) {
-            await organizer.changeParticipants(meetingIdentifier, newParticipants)
-            //todo get the room capacity and check if we need to change the room or not
-            //todo cancel the meeting if re-allocation couldn't be done
-        } else {
-            await organizer.cancelChosenMeeting(meetingIdentifier);
-            let cancelledMeeting = organizer.getMeetingById(meetingIdentifier);
-            //todo throw a proper exception when the meeting couldn't be re-allocated
-            await this.setNewMeeting(cancelledMeeting.title, cancelledMeeting.description, newParticipants, cancelledMeeting.start, cancelledMeeting.end, cancelledMeeting.purpose, cancelledMeeting.office, cancelledMeeting.whiteboard, cancelledMeeting.projector, cancelledMeeting.organizer
-            );
-        }
-    }
 
     async setPDChatOrInterview(organizer, startingTime, endingTime, office) {
         let isQomFree = organizer.isRoomFree("Qom", office, startingTime, endingTime);
@@ -233,7 +230,6 @@ module.exports = {
 
     reassignRooms() {
         //return "" if no room...
-        //todo
     }
 
     async setTheMeetingWithRoomID(organizer, freeRoom, office, organizerId, title, descriptions, participants, startingTime, endingTime, purpose, whiteboard, projector) {
@@ -282,4 +278,64 @@ module.exports = {
         } catch (err) {
             throw err
         }
+
+
+
+        async editAMeeting(meetingIdentifier, title, descriptions, newParticipants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerIdentifier) {
+        let mee = meetingDataAccess.getOrganizer();
+        // let organizerIdentifier = this.getOrganizerID(email);
+        let meeting = organizer.getMeetingById(meetingIdentifier);
+        if (organizerIdentifier !== meeting.organizer)
+            throw "only the meeting organizer can edit a meeting"
+        try {
+            let organizer = meetingDataAccess.getOrganizer();
+            if (title)
+                await organizer.changeTitle(meetingIdentifier, title)
+            if (descriptions)
+                await organizer.changeDescription(meetingIdentifier, descriptions)
+            if (newParticipants)
+                await this.editParticipants(organizer, meetingIdentifier, newParticipants)
+            if (startingTime || endingTime)
+                await this.editTime(organizer, meetingIdentifier, startingTime, endingTime);
+            if (purpose)
+                await organizer.changePurpose(meetingIdentifier, purpose)
+            if (office)
+                await this.editOffice(organizer, meetingIdentifier, office)
+            if (whiteboard !== undefined)
+                await organizer.changeWhiteBoard(meetingIdentifier, whiteboard)
+            if (projector !== undefined)
+                await organizer.changeProjector(meetingIdentifier, projector)
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async editTime(organizer, meetingIdentifier, startingTime, endingTime) {
+        await cancelChosenMeeting(meetingIdentifier);
+        if (startingTime && endingTime) {
+        }
+        if (startingTime) {
+
+        }
+        if (endingTime) {
+        }
+    }
+
+    async editOffice(organizer, meetingIdentifier, office) {
+        await organizer.cancelChosenMeeting(meetingIdentifier);
+        let cancelledMeeting = organizer.getMeetingById(meetingIdentifier)
+        await this.setNewMeeting(cancelledMeeting.title, cancelledMeeting.description, cancelledMeeting.participants, cancelledMeeting.start, cancelledMeeting.end, cancelledMeeting.purpose, office, cancelledMeeting.whiteboard, cancelledMeeting.projector, cancelledMeeting.organizer);
+    }
+
+    async editParticipants(organizer, meetingIdentifier, newParticipants) {
+        let meeting = organizer.getMeetingById(meetingIdentifier);
+        if (meeting.participants.length === newParticipants.length) {
+            await organizer.changeParticipants(meetingIdentifier, newParticipants)
+        } else {
+            await organizer.cancelChosenMeeting(meetingIdentifier);
+            let cancelledMeeting = organizer.getMeetingById(meetingIdentifier);
+            await this.setNewMeeting(cancelledMeeting.title, cancelledMeeting.description, newParticipants, cancelledMeeting.start, cancelledMeeting.end, cancelledMeeting.purpose, cancelledMeeting.office, cancelledMeeting.whiteboard, cancelledMeeting.projector, cancelledMeeting.organizer
+            );
+        }
+    }
     }*/

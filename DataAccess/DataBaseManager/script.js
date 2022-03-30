@@ -33,11 +33,6 @@ async function createMeeting(title, description, participants, start, end, purpo
     await meeting.save();
 }
 
-async function getFirstTimeForMeeting() {
-    await connectToDataBase();
-    //todo
-}
-
 async function cancelChosenMeeting(meetingIdentifier) {
     await connectToDataBase();
     const meeting = await Meeting.findById(meetingIdentifier);
@@ -72,29 +67,6 @@ async function changeParticipants(meetingIdentifier, newParticipants) {
     await connectToDataBase();
     const meeting = await Meeting.findById(meetingIdentifier);
     meeting.participants = newParticipants;
-    meeting.save();
-}
-
-async function changeMeetingStartAndEnd(meetingIdentifier, startingTime, endingTime) {
-    await connectToDataBase();
-    const meeting = await Meeting.findById(meetingIdentifier);
-    meeting.start = startingTime;
-    meeting.save();
-    meeting.end = endingTime;
-    meeting.save();
-}
-
-async function changeStartingTime(meetingIdentifier, startingTime) {
-    await connectToDataBase();
-    const meeting = await Meeting.findById(meetingIdentifier);
-    meeting.start = startingTime;
-    meeting.save();
-}
-
-async function changeEndingTime(meetingIdentifier, endingTime) {
-    await connectToDataBase();
-    const meeting = await Meeting.findById(meetingIdentifier);
-    meeting.end = endingTime;
     meeting.save();
 }
 
@@ -150,20 +122,46 @@ module.exports = {
     changeTitle,
     changeDescription,
     changeParticipants,
-    changeMeetingStartAndEnd,
-    changeStartingTime,
-    changeEndingTime,
+    // changeMeetingStartAndEnd,
+    // changeStartingTime,
+    // changeEndingTime,
     changePurpose,
     changeWhiteBoard,
     changeProjector,
     getMeetingById,
     createMeeting,
-    getFirstTimeForMeeting,
     cancelChosenMeeting,
     getListAllMeetingInTimeSlot,
     getListOfAllMeetingInRoom,
     removeCancellation
 }
+
+
+/*async function changeMeetingStartAndEnd(meetingIdentifier, startingTime, endingTime) {
+    await connectToDataBase();
+    const meeting = await Meeting.findById(meetingIdentifier);
+    meeting.start = startingTime;
+    meeting.save();
+    meeting.end = endingTime;
+    meeting.save();
+}
+
+async function changeStartingTime(meetingIdentifier, startingTime) {
+    await connectToDataBase();
+    const meeting = await Meeting.findById(meetingIdentifier);
+    meeting.start = startingTime;
+    meeting.save();
+}
+
+async function changeEndingTime(meetingIdentifier, endingTime) {
+    await connectToDataBase();
+    const meeting = await Meeting.findById(meetingIdentifier);
+    meeting.end = endingTime;
+    meeting.save();
+}*/
+
+
+
 //update user:
 
 

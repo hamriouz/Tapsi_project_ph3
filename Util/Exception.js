@@ -10,6 +10,9 @@ class Exception {
             :
             case "only the meeting organizer can edit a meeting"
             :
+            case
+            'unable to edit the chosen attribute'
+            :
                 return 401;
             case
             "Invalid input!"
@@ -33,6 +36,9 @@ class Exception {
             :
             case
             'No meeting has been set with the given identifier'
+            :
+            case
+            'there are no small rooms with the projector feature'
             :
                 return 404;
             default:
