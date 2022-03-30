@@ -4,7 +4,6 @@ const Meeting = require('../Domain/Meeting');
 
 class RequestHandler{
     async setMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id) {
-
         if (!(title && descriptions && participants && startingTime && endingTime && purpose && office) && (whiteboard !== undefined && projector !== undefined))
             throw ("please fill all the information");
         try {
