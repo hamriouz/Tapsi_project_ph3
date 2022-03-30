@@ -2,13 +2,14 @@ const express = require('express');
 const Token = require('./AccessManager/Token');
 const AccessManager = require('./AccessManager/AccessManager');
 const RequestHandler = require('../Handler/RequestHandler');
-const Exception = require('../Handler/Exception');
+const Exception = require('../Util/Exception');
 const app = express();
 
 app.use(express.json());
 
-
 //todo checking the token must be done by the user micro service and we cant have a copy of the token class here!
+const requestHandler = RequestHandler.getInstance();
+
 
 app.post('/RoomManagement/SetMeeting', Token.authenticateActor, AccessManager.validateAccess, async (req, res) => {
     const {
@@ -23,7 +24,7 @@ app.post('/RoomManagement/SetMeeting', Token.authenticateActor, AccessManager.va
         projector
     } = req.body
     try {
-        const requestHandler = RequestHandler.getInstance();
+        // const requestHandler = RequestHandler.getInstance();
         const meetingIdentifier = await requestHandler.setMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, req.id);
         res.status(201).send("The meeting was successfully created and your meeting identifier is " + meetingIdentifier);
     } catch (err) {
@@ -34,7 +35,7 @@ app.post('/RoomManagement/SetMeeting', Token.authenticateActor, AccessManager.va
 app.post('/RoomManagement/GetFirstAvailableTime', Token.authenticateActor, AccessManager.validateAccess, async (req, res) => {
     const {participants, specificDate, duration, purpose, office, whiteboard, projector} = req.body
     try {
-        const requestHandler = RequestHandler.getInstance();
+        // const requestHandler = RequestHandler.getInstance();
         const firstAvailableTime = await requestHandler.getFirstAvailableTime(participants, specificDate, duration, purpose, office, whiteboard, projector)
         res.status(202).send(firstAvailableTime);
     } catch (err) {
@@ -46,7 +47,7 @@ app.post('/RoomManagement/GetFirstAvailableTime', Token.authenticateActor, Acces
 app.post('/RoomManagement/CancelMeeting', Token.authenticateActor, AccessManager.validateAccess, async (req, res) => {
     const {meetingIdentifier} = req.body
     try {
-        const requestHandler = RequestHandler.getInstance();
+        // const requestHandler = RequestHandler.getInstance();
         await requestHandler.cancelMeeting(meetingIdentifier, req.id, req.role);
         res.status(202).send("The selected meeting was successfully cancelled");
     } catch (err) {
@@ -69,7 +70,7 @@ app.post('/RoomManagement/EditMeeting', Token.authenticateActor, AccessManager.v
         projector
     } = req.body
     try {
-        const requestHandler = RequestHandler.getInstance();
+        // const requestHandler = RequestHandler.getInstance();
         await requestHandler.editMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, req.id);
         res.status(202).send("The selected meeting was successfully edited!");
     } catch (err) {
@@ -81,7 +82,7 @@ app.post('/RoomManagement/EditMeeting', Token.authenticateActor, AccessManager.v
 app.post('/RoomManagement/GetMeetingInTimeSlot', Token.authenticateActor, AccessManager.validateAccess, async (req, res) => {
     const {startingTime, endingTime} = req.body
     try {
-        const requestHandler = RequestHandler.getInstance()
+        // const requestHandler = RequestHandler.getInstance()
         const meetingsInTimeSlot = await requestHandler.getMeetingInTimeSlot(startingTime, endingTime)
         res.status(200).send(meetingsInTimeSlot);
     } catch (err) {
@@ -93,7 +94,7 @@ app.post('/RoomManagement/GetMeetingInTimeSlot', Token.authenticateActor, Access
 app.post('/RoomManagement/GetMeetingInRoom', Token.authenticateActor, AccessManager.validateAccess, async (req, res) => {
     const {roomIdentifier, date} = req.body
     try {
-        const requestHandler = RequestHandler.getInstance();
+        // const requestHandler = RequestHandler.getInstance();
         const meetingsInRoom = await requestHandler.getMeetingInRoom(roomIdentifier, date)
         res.status(200).send(meetingsInRoom);
     } catch (err) {

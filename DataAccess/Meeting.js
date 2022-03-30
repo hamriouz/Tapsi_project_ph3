@@ -1,27 +1,6 @@
-const {
-    cancelChosenMeeting,
-    changeTitle,
-    changeParticipants,
-    changeDescription,
-    changeWhiteBoard,
-    changeProjector,
-    changePurpose,
-    getMeetingById,
-    createMeeting,
-    isWantedRoomFree, removeCancellation
-} = require('./DataBaseManager/script');
-let instanceOfDataAccessOrganizer;
+const {createMeeting, getListAllMeetingInTimeSlot, getListOfAllMeetingInRoom, getMeetingById, cancelChosenMeeting, changeTitle, changeDescription, changeProjector, changeParticipants, changePurpose, changeWhiteBoard} = require("./DataBaseManager/script");
 
-class MeetingDataAccess {
-    constructor() {
-    }
-
-    static getOrganizer() {
-        if (instanceOfDataAccessOrganizer)
-            return instanceOfDataAccessOrganizer;
-        instanceOfDataAccessOrganizer = new MeetingDataAccess();
-        return instanceOfDataAccessOrganizer;
-    }
+class DataAccess{
 
     async createNewMeeting(title, description, participants, start, end, purpose, office, whiteboard, projector, roomIdentifier, organizerId){
         try {
@@ -29,6 +8,13 @@ class MeetingDataAccess {
         }catch (err){
             throw err;
         }
+    }
+
+    async getMeetingByIdentifier(meetingIdentifier){
+       const meeting = await getMeetingById(meetingIdentifier);
+       if (meeting)
+           return meeting;
+       else throw 'No meeting has been set with the given identifier'
     }
 
     async cancelChosenMeeting(meetingIdentifier) {
@@ -39,19 +25,19 @@ class MeetingDataAccess {
         }
     }
 
-    async removeCancellation(meetingIdentifier){
+    async meetingsInTimeSlot(startingTime, endingTime){
         try {
-            await removeCancellation(meetingIdentifier);
-        } catch (err) {
+            return await getListAllMeetingInTimeSlot(startingTime, endingTime);
+        }catch (err){
             throw err;
         }
     }
 
-    async getMeetingById(meetingIdentifier){
+    async meetingsInRoom(roomIdentifier, date){
         try {
-            await getMeetingById(meetingIdentifier)
+            return await getListOfAllMeetingInRoom(roomIdentifier, date);
         }catch (err){
-            throw err
+            throw err;
         }
     }
 
@@ -79,23 +65,6 @@ class MeetingDataAccess {
         }
     }
 
-    async isRoomFree(roomName, office, startingTime, endingTime){
-        let meetingInRoom = await isWantedRoomFree(roomName, office, startingTime, endingTime)
-        return !meetingInRoom;
-    }
-
-/*    async changeMeetingStartAndEnd(meetingIdentifier,) {
-
-    } //todo if the room isnt free in the new time slot
-
-    async changeStartingTime(meetingIdentifier,) {
-
-    } //todo if the room isnt free at that time anymore
-
-    async changeEndingTime(meetingIdentifier,) {
-
-    } // todo if the room isnt*/
-
     async changePurpose(meetingIdentifier, newPurpose) {
         try {
             await changePurpose(meetingIdentifier, newPurpose)
@@ -122,15 +91,24 @@ class MeetingDataAccess {
         } catch (err) {
             throw err
         }
-    } // todo if the room doesnt already have a projector and want to change not wanting to wanting
-
-    getUserIdWithEmail(email){
-        //todo return user identifier
-    }
-
-    getRoomIdentifierWithNameOffice(name, office){
-        //todo return room identifier
     }
 }
 
-module.exports = MeetingDataAccess;
+const DataAccessInstance = (function () {
+    let instance;
+
+    function createInstance() {
+        return new DataAccess();
+    }
+
+    return {
+        getInstance: function () {
+            if (!instance) {
+                instance = createInstance();
+            }
+            return instance;
+        },
+    };
+})();
+
+module.exports = DataAccessInstance;

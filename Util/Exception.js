@@ -31,6 +31,9 @@ class Exception {
             case
             "No free room could be found"
             :
+            case
+            'No meeting has been set with the given identifier'
+            :
                 return 404;
             default:
                 return 404;
