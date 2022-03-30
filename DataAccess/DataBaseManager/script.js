@@ -113,8 +113,13 @@ async function getListOfAllMeetingInRoom(roomIdentifier, date) {
 
 async function isWantedRoomFree(roomName, office, startingTime, endingTime) {
     const meeting = await Meeting.where("name").equals(roomName).where("office").equals(office).where("start").lte(endingTime).where("end").gte(startingTime).where("isCancelled").equals(false);
-    return meeting;
+    return meeting
 
+}
+
+async function getID(startingTime, endingTime, office, roomIdentifier){
+    const meeting = await Meeting.where("start").equals(startingTime).where("end").equals(endingTime).where("office").equals(office).where("roomIdentifier").equals(roomIdentifier);
+    return meeting[0]._id.valueOf();
 }
 
 module.exports = {
@@ -125,6 +130,7 @@ module.exports = {
     // changeMeetingStartAndEnd,
     // changeStartingTime,
     // changeEndingTime,
+    getID,
     changePurpose,
     changeWhiteBoard,
     changeProjector,

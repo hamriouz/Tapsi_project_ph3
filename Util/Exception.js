@@ -13,6 +13,9 @@ class Exception {
             case
             'unable to edit the chosen attribute'
             :
+            case
+            'no room found in the given period of time for the wanted office'
+            :
                 return 401;
             case
             "Invalid input!"

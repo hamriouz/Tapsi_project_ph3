@@ -13,6 +13,7 @@ const {
     editProjector
 } = require('./Functions')
 const DataAccess = require("../DataAccess/Meeting");
+const {getID} = require("../DataAccess/DataBaseManager/script");
 
 const dataAccess = DataAccess.getInstance();
 
@@ -113,12 +114,16 @@ class Meeting {
                 this.projector = projector;
             }
             if (office) {
-                await Meeting.setNewMeeting(this.title, this.description, this.participants, this.startingTime, this.endingTime, this.purpose, office, this.whiteboard, this.projector, this.organizerId, false);
+                await Meeting.setNewMeeting(this.title, this.description, this.participants, this.startingTime, this.endingTime, this.purpose, office, this.whiteboard, this.projector, this.organizerId, true);
                 await this.cancelAMeeting(meetingIdentifier, id, "organizer");
             }
         } catch (err) {
             throw err;
         }
+    }
+
+    async getMeetingID(){
+        return getID(this.startingTime, this.endingTime, this.office, this.roomIdentifier)
     }
 
     async static getMeetingInATimeSlot(startingTime, endingTime) {

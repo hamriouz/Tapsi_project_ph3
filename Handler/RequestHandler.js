@@ -7,7 +7,7 @@ class RequestHandler{
         if (!(title && descriptions && participants && startingTime && endingTime && purpose && office) && (whiteboard !== undefined && projector !== undefined))
             throw ("please fill all the information");
         try {
-            return await Meeting.setNewMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id);
+            return await Meeting.setNewMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id, false);
             // const meeting = new Meeting()
         } catch (err) {
             throw err

@@ -2,20 +2,112 @@ const {isWantedRoomFree, cancelChosenMeeting, changeProjector} = require("../Dat
 const DataAccess = require('../DataAccess/Meeting');
 const dataAccess = DataAccess.getInstance();
 const Meeting = require('../Domain/Meeting');
+const e = require("express");
 
 module.exports = {
-    setMeetingWithFewParticipants(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id, isBeingEdited) {
-        //todo if is being edited must throw an exception relevant to the case
+    async setMeetingWithFewParticipants(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id, isBeingEdited) {
+        let meetingIdentifier;
+        let roomIdentifier;
+
+        if (participants.length === 3) {
+            let isBabolFree = isWantedRoomFree("Babol", office, startingTime, endingTime);
+            let isAhvazFree = isWantedRoomFree("Ahvaz", office, startingTime, endingTime);
+            let isIsfahanFree = isWantedRoomFree("Isfahan", office, startingTime, endingTime);
+            let isRashtFree = isWantedRoomFree("Rasht", office, startingTime, endingTime);
+            let isKarajFree = isWantedRoomFree("Karaj", office, startingTime, endingTime);
+
+            if (isBabolFree)
+                roomIdentifier = this.getRoomIdentifier("Babol", office);
+            else if (isAhvazFree)
+                roomIdentifier = this.getRoomIdentifier("Ahvaz", office);
+            else if (isIsfahanFree)
+                roomIdentifier = this.getRoomIdentifier("Isfahan", office);
+            else if (isRashtFree)
+                roomIdentifier = this.getRoomIdentifier("Rasht", office);
+            else if (isKarajFree)
+                roomIdentifier = this.getRoomIdentifier("Karaj", office);
+            else roomIdentifier = this.reorganize();
+        } else if (participants.length === 4) {
+            let isKarajFree = isWantedRoomFree("Karaj", office, startingTime, endingTime);
+            if (isKarajFree)
+                roomIdentifier = this.getRoomIdentifier("Karaj", office);
+            else roomIdentifier = this.reorganize();
+        }
+
+        if (roomIdentifier) {
+            let meeting = new Meeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, roomIdentifier, id);
+            meetingIdentifier = await meeting.getMeetingID();
+            return meetingIdentifier;
+        } else {
+            if (isBeingEdited)
+                throw 'unable to edit the chosen attribute'
+            else throw 'no room found in the given period of time for the wanted office'
+        }
     },
 
-    setMeetingWithManyParticipants(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id, isBeingEdited) {
-        //todo if is being edited must throw an exception relevant to the case
+    async setMeetingWithManyParticipants(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id, isBeingEdited) {
+        let meetingIdentifier;
+        let roomIdentifier;
+
+        if (participants.length === 4) {
+            let isBabolFree = isWantedRoomFree("Babol", office, startingTime, endingTime);
+            let isShirazFree = isWantedRoomFree("Shiraz", office, startingTime, endingTime);
+            let isMashhadFree = isWantedRoomFree("Mashhad", office, startingTime, endingTime);
+
+            if (isBabolFree)
+                roomIdentifier = this.getRoomIdentifier("Babol", office);
+            else if (isShirazFree)
+                roomIdentifier = this.getRoomIdentifier("Shiraz", office);
+            else if (isMashhadFree)
+                roomIdentifier = this.getRoomIdentifier("Mashhad", office);
+            else roomIdentifier = this.reorganize();
+
+        } else if (participants.length === 5 || participants.length === 6) {
+            let isShirazFree = isWantedRoomFree("Shiraz", office, startingTime, endingTime);
+            let isMashhadFree = isWantedRoomFree("Mashhad", office, startingTime, endingTime);
+
+            if (isShirazFree)
+                roomIdentifier = this.getRoomIdentifier("Shiraz", office);
+            else if (isMashhadFree)
+                roomIdentifier = this.getRoomIdentifier("Mashhad", office);
+            else roomIdentifier = this.reorganize();
+
+        } else if (participants.length > 6 && participants.length < 9) {
+            let isMashhadFree = isWantedRoomFree("Mashhad", office, startingTime, endingTime);
+            if (isMashhadFree)
+                roomIdentifier = this.getRoomIdentifier("Mashhad", office);
+            else roomIdentifier = this.reorganize();
+        }
+
+        if (roomIdentifier) {
+            let meeting = new Meeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, roomIdentifier, id);
+            meetingIdentifier = await meeting.getMeetingID();
+            return meetingIdentifier;
+        } else {
+            if (isBeingEdited)
+                throw 'unable to edit the chosen attribute'
+            else throw 'no room found in the given period of time for the wanted office'
+        }
 
     },
 
-    setAMeetingInTehranRoom(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id, isBeingEdited) {
-        //todo if is being edited must throw an exception relevant to the case
+    async setAMeetingInTehranRoom(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id, isBeingEdited) {
+        let meetingIdentifier;
+        let roomIdentifier;
 
+        let isTehranFree = isWantedRoomFree("Tehran", office, startingTime, endingTime);
+        if (isTehranFree)
+            roomIdentifier = this.getRoomIdentifier("Tehran", office);
+
+        if (roomIdentifier) {
+            let meeting = new Meeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, roomIdentifier, id);
+            meetingIdentifier = await meeting.getMeetingID();
+            return meetingIdentifier;
+        } else {
+            if (isBeingEdited)
+                throw 'unable to edit the chosen attribute'
+            else throw 'no room found in the given period of time for the wanted office'
+        }
     },
 
     async getSoonestTimeInSmallRooms(participants, specificDate, duration, purpose, office, whiteboard, projector) {
@@ -123,12 +215,20 @@ module.exports = {
     },
 
     getMeetingRoomCapacity(meetingIdentifier) {
-        let roomCapacity
+        let roomCapacity;
         //todo
         return roomCapacity;
     },
 
-    reorganize(){}
+    getRoomIdentifier(roomName, office) {
+        let roomIdentifier;
+        //todo
+        return roomIdentifier;
+    },
+
+    reorganize() {
+        //todo
+    }
 
 
 }
