@@ -2,7 +2,6 @@ const {isWantedRoomFree, cancelChosenMeeting, changeProjector} = require("../Dat
 const DataAccess = require('../DataAccess/Meeting');
 const dataAccess = DataAccess.getInstance();
 const Meeting = require('../Domain/Meeting');
-const e = require("express");
 
 module.exports = {
     async setMeetingWithFewParticipants(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id, isBeingEdited) {
@@ -26,12 +25,13 @@ module.exports = {
                 roomIdentifier = this.getRoomIdentifier("Rasht", office);
             else if (isKarajFree)
                 roomIdentifier = this.getRoomIdentifier("Karaj", office);
-            else roomIdentifier = this.reorganize();
+            else roomIdentifier = this.reorganize(participants, startingTime, endingTime, purpose, office, whiteboard, projector);
+
         } else if (participants.length === 4) {
             let isKarajFree = isWantedRoomFree("Karaj", office, startingTime, endingTime);
             if (isKarajFree)
                 roomIdentifier = this.getRoomIdentifier("Karaj", office);
-            else roomIdentifier = this.reorganize();
+            else roomIdentifier = this.reorganize(participants, startingTime, endingTime, purpose, office, whiteboard, projector);
         }
 
         if (roomIdentifier) {
@@ -60,7 +60,7 @@ module.exports = {
                 roomIdentifier = this.getRoomIdentifier("Shiraz", office);
             else if (isMashhadFree)
                 roomIdentifier = this.getRoomIdentifier("Mashhad", office);
-            else roomIdentifier = this.reorganize();
+            else roomIdentifier = this.reorganize(participants, startingTime, endingTime, purpose, office, whiteboard, projector);
 
         } else if (participants.length === 5 || participants.length === 6) {
             let isShirazFree = isWantedRoomFree("Shiraz", office, startingTime, endingTime);
@@ -70,13 +70,13 @@ module.exports = {
                 roomIdentifier = this.getRoomIdentifier("Shiraz", office);
             else if (isMashhadFree)
                 roomIdentifier = this.getRoomIdentifier("Mashhad", office);
-            else roomIdentifier = this.reorganize();
+            else roomIdentifier = this.reorganize(participants, startingTime, endingTime, purpose, office, whiteboard, projector);
 
         } else if (participants.length > 6 && participants.length < 9) {
             let isMashhadFree = isWantedRoomFree("Mashhad", office, startingTime, endingTime);
             if (isMashhadFree)
                 roomIdentifier = this.getRoomIdentifier("Mashhad", office);
-            else roomIdentifier = this.reorganize();
+            else roomIdentifier = this.reorganize(participants, startingTime, endingTime, purpose, office, whiteboard, projector);
         }
 
         if (roomIdentifier) {
@@ -125,14 +125,16 @@ module.exports = {
             let isRashtFree = await isWantedRoomFree("Rasht", office, specificDate, endingSpecificTime);
             let isQomFree = await isWantedRoomFree("Qom", office, specificDate, endingSpecificTime);
             let isKarajFree = await isWantedRoomFree("Karaj", office, specificDate, endingSpecificTime);
-            if (participants.length > 3)
+
+            if (participants.length > 3) {
                 if (isKarajFree)
                     return specificDate;
-                else if (isBabolFree || isAhvazFree || isIsfahanFree || isRashtFree || isQomFree || isKarajFree) return specificDate;
-                else {
-                    specificDate += (15 * 1000 * 60);
-                    endingSpecificTime += (15 * 1000 * 60);
-                }
+            }
+            else if (isBabolFree || isAhvazFree || isIsfahanFree || isRashtFree || isQomFree || isKarajFree) return specificDate;
+            else {
+                specificDate += (15 * 1000 * 60);
+                endingSpecificTime += (15 * 1000 * 60);
+            }
         }
     },
 
@@ -183,6 +185,8 @@ module.exports = {
     },
 
     async editTime(meetingIdentifier, startingTime, endingTime) {
+        //todo check if it's in the participants working hour
+
         const meeting = Meeting.getMeetingByIdentifier(meetingIdentifier);
         await cancelChosenMeeting(meetingIdentifier);
         if (!startingTime)
@@ -216,17 +220,19 @@ module.exports = {
 
     getMeetingRoomCapacity(meetingIdentifier) {
         let roomCapacity;
-        //todo
+        const meeting = Meeting.getMeetingByIdentifier(meetingIdentifier);
+        const roomIdentifier = meeting[0].roomIdentifier;
+        //todo get room capacity based on the room identifier
         return roomCapacity;
     },
 
     getRoomIdentifier(roomName, office) {
         let roomIdentifier;
-        //todo
+        //todo get room identifier based on the name and office
         return roomIdentifier;
     },
 
-    reorganize() {
+    reorganize(participants, startingTime, endingTime, purpose, office, whiteboard, projector) {
         //todo
     }
 

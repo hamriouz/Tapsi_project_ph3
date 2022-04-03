@@ -81,17 +81,6 @@ class DataAccess{
         }
     }
 
-    async changeProjector(meetingIdentifier, newProjector) {
-        try {
-            if (newProjector === false)
-                await changeProjector(meetingIdentifier, newProjector)
-            else {
-                //todo check if the room already has a projector or not. if it doesnt the meeting's location has to change
-            }
-        } catch (err) {
-            throw err
-        }
-    }
 }
 
 const DataAccessInstance = (function () {

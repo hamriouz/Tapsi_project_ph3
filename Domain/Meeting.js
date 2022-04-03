@@ -44,6 +44,7 @@ class Meeting {
 
     async static setNewMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerId, isBeingEdited) {
         try {
+            //todo check if it's in the participants working hour
             let meetingIdentifier;
             if (purpose === MeetingPurpose.INTERVIEW || purpose === MeetingPurpose.PDCHAT) meetingIdentifier = setMeetingWithFewParticipants(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerId, isBeingEdited)
             else if (purpose === MeetingPurpose.SPECREVIEW || participants.length > 8) meetingIdentifier = setAMeetingInTehranRoom(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerId, isBeingEdited)

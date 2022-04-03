@@ -1,16 +1,21 @@
 {
   "name": "phase3",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
-    "devStart": "nodemon DataAccess/DataBaseManager/script.js"
+    "devStart": "nodemon DataAccess/DataBaseManager/script.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@grpc/proto-loader": "^0.1.0",
+    "bluebird": "^3.7.2",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "express": "~4.16.1",
+    "grpc": "^1.11.0",
     "http-errors": "~1.6.3",
     "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.6.1",
     "mongoose": "^6.2.6",
     "morgan": "~1.9.1",
     "objection": "^3.0.1",
@@ -19,7 +24,7 @@
   "main": "app.js",
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "description": "",
   "devDependencies": {
     "nodemon": "^2.0.15"

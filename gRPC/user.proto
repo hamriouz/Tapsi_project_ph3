@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package user;
+
+service User {
+  rpc getWorkingHour (UserRequest) returns (UserResponse){}
+}
+
+message UserRequest {
+  int32 id = 1;
+}
+
+message UserResponse{
+  UserWorkingHour message = 1;
+}
+
+message UserWorkingHour {
+  oneof Response{
+    string workingHour = 1;
+    error error = 2;
+  }
+}
+
+message error{
+  string message = 1;
+  int32 status = 2;
+}
+
