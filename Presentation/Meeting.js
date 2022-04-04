@@ -10,22 +10,13 @@ app.use(express.json());
 //todo checking the token must be done by the user micro service and we cant have a copy of the token class here!
 const requestHandler = RequestHandler.getInstance();
 
-
 app.post('/RoomManagement/SetMeeting', Token.authenticateActor, AccessManager.validateAccess, async (req, res) => {
-    const {
-        title,
-        descriptions,
-        participants,
-        startingTime,
-        endingTime,
-        purpose,
-        office,
-        whiteboard,
-        projector
-    } = req.body
+    // const {participants, specificDate, duration, purpose, office, whiteboard, projector} = req.body
     try {
         // const requestHandler = RequestHandler.getInstance();
-        const meetingIdentifier = await requestHandler.setMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, req.id);
+        const meetingInfo = req.body;
+        const meetingIdentifier = await requestHandler.setMeeting(meetingInfo, req.id);
+        // const meetingIdentifier = await requestHandler.setMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, req.id);
         res.status(201).send("The meeting was successfully created and your meeting identifier is " + meetingIdentifier);
     } catch (err) {
         res.status(Exception.getStatusByExceptionMessage(err)).send(err);
@@ -33,10 +24,11 @@ app.post('/RoomManagement/SetMeeting', Token.authenticateActor, AccessManager.va
 })
 
 app.post('/RoomManagement/GetFirstAvailableTime', Token.authenticateActor, AccessManager.validateAccess, async (req, res) => {
-    const {participants, specificDate, duration, purpose, office, whiteboard, projector} = req.body
     try {
         // const requestHandler = RequestHandler.getInstance();
-        const firstAvailableTime = await requestHandler.getFirstAvailableTime(participants, specificDate, duration, purpose, office, whiteboard, projector)
+        const meetingInfo = req.body;
+        const firstAvailableTime = await requestHandler.getFirstAvailableTime(meetingInfo);
+        // const firstAvailableTime = await requestHandler.getFirstAvailableTime(participants, specificDate, duration, purpose, office, whiteboard, projector)
         res.status(202).send(firstAvailableTime);
     } catch (err) {
         res.status(Exception.getStatusByExceptionMessage(err)).send(err);
@@ -57,21 +49,11 @@ app.post('/RoomManagement/CancelMeeting', Token.authenticateActor, AccessManager
 })
 
 app.post('/RoomManagement/EditMeeting', Token.authenticateActor, AccessManager.validateAccess, async (req, res) => {
-    const {
-        meetingIdentifier,
-        title,
-        descriptions,
-        participants,
-        startingTime,
-        endingTime,
-        purpose,
-        office,
-        whiteboard,
-        projector
-    } = req.body
+    // const {meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector} = req.body
+    const meetingInfo = req.body;
     try {
         // const requestHandler = RequestHandler.getInstance();
-        await requestHandler.editMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, req.id);
+        await requestHandler.editMeeting(meetingInfo, req.id);
         res.status(202).send("The selected meeting was successfully edited!");
     } catch (err) {
         res.status(Exception.getStatusByExceptionMessage(err)).send(err);

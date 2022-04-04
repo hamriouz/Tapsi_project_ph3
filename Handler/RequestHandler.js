@@ -3,22 +3,25 @@
 const Meeting = require('../Domain/Meeting');
 
 class RequestHandler{
-    async setMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id) {
+    async setMeeting(meetingInfo, id) {
+        const {title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector,} = meetingInfo
         if (!(title && descriptions && participants && startingTime && endingTime && purpose && office) && (whiteboard !== undefined && projector !== undefined))
             throw ("please fill all the information");
         try {
-            return await Meeting.setNewMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id, false);
+            return await Meeting.setNewMeeting(meetingInfo, id, false);
             // const meeting = new Meeting()
         } catch (err) {
             throw err
         }
     }
 
-    async getFirstAvailableTime(participants, specificDate, duration, purpose, office, whiteboard, projector) {
+    async getFirstAvailableTime(meetingInfo) {
+        const {participants, duration, purpose, office, whiteboard, projector} = meetingInfo;
+        // const {participants, specificDate, duration, purpose, office, whiteboard, projector} = meetingInfo;
         if (!(participants && duration && purpose && office) && (whiteboard !== undefined && projector !== undefined))
             throw ("please fill all the information");
         try {
-            return await Meeting.getSoonestAvailableTime(participants, specificDate, duration, purpose, office, whiteboard, projector)
+            return await Meeting.getSoonestAvailableTime(meetingInfo)
         } catch (err) {
             throw err
         }
@@ -35,10 +38,11 @@ class RequestHandler{
         }
     }
 
-    async editMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id) {
+    async editMeeting(meetingInfo, requestSenderId) {
+        const {meetingIdentifier} = meetingInfo;
         try {
             const meeting = await Meeting.getMeetingByIdentifier(meetingIdentifier);
-            await meeting.editAMeeting(meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id)
+            await meeting.editAMeeting(meetingInfo, requestSenderId)
         } catch (err) {
             throw err
         }
