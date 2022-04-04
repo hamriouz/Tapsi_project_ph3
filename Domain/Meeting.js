@@ -4,7 +4,18 @@ const {getID, isWantedRoomFree, cancelChosenMeeting, changeProjector} = require(
 
 const dataAccess = DataAccess.getInstance();
 
-async function setMeetingWithFewParticipants(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id, isBeingEdited) {
+async function setMeetingWithFewParticipants(meetingInfo, id, isBeingEdited) {
+    const {
+        title,
+        descriptions,
+        participants,
+        startingTime,
+        endingTime,
+        purpose,
+        office,
+        whiteboard,
+        projector
+    } = meetingInfo;
     let meetingIdentifier;
     let roomIdentifier;
 
@@ -35,7 +46,7 @@ async function setMeetingWithFewParticipants(title, descriptions, participants, 
     }
 
     if (roomIdentifier) {
-        let meeting = new Meeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, roomIdentifier, id);
+        let meeting = new Meeting(meetingInfo, id);
         meetingIdentifier = await meeting.getMeetingID();
         return meetingIdentifier;
     } else {
@@ -45,7 +56,8 @@ async function setMeetingWithFewParticipants(title, descriptions, participants, 
     }
 }
 
-async function setMeetingWithManyParticipants(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id, isBeingEdited) {
+async function setMeetingWithManyParticipants(meetingInfo, id, isBeingEdited) {
+    const {title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector} = meetingInfo;
     let meetingIdentifier;
     let roomIdentifier;
 
@@ -80,7 +92,7 @@ async function setMeetingWithManyParticipants(title, descriptions, participants,
     }
 
     if (roomIdentifier) {
-        let meeting = new Meeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, roomIdentifier, id);
+        let meeting = new Meeting(meetingInfo, id);
         meetingIdentifier = await meeting.getMeetingID();
         return meetingIdentifier;
     } else {
@@ -91,7 +103,8 @@ async function setMeetingWithManyParticipants(title, descriptions, participants,
 
 }
 
-async function setAMeetingInTehranRoom(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, id, isBeingEdited) {
+async function setAMeetingInTehranRoom(meetingInfo, id, isBeingEdited) {
+    const {startingTime, endingTime, office} = meetingInfo;
     let meetingIdentifier;
     let roomIdentifier;
 
@@ -100,7 +113,7 @@ async function setAMeetingInTehranRoom(title, descriptions, participants, starti
         roomIdentifier = getRoomIdentifier("Tehran", office);
 
     if (roomIdentifier) {
-        let meeting = new Meeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, roomIdentifier, id);
+        let meeting = new Meeting(meetingInfo, id);
         meetingIdentifier = await meeting.getMeetingID();
         return meetingIdentifier;
     } else {
@@ -110,7 +123,8 @@ async function setAMeetingInTehranRoom(title, descriptions, participants, starti
     }
 }
 
-async function getSoonestTimeInSmallRooms(participants, specificDate, duration, purpose, office, whiteboard, projector) {
+async function getSoonestTimeInSmallRooms(meetingInfo) {
+    let {participants, specificDate, duration, office, projector} = meetingInfo;
     if (projector === true)
         throw 'there are no small rooms with the projector feature'
     if (!specificDate) {
@@ -137,7 +151,8 @@ async function getSoonestTimeInSmallRooms(participants, specificDate, duration, 
     }
 }
 
-async function getSoonestTimeInMediumRooms(participants, specificDate, duration, purpose, office, whiteboard, projector) {
+async function getSoonestTimeInMediumRooms(meetingInfo) {
+    let {participants, specificDate, duration, purpose, office, whiteboard, projector} = meetingInfo
     if (!specificDate) {
         const d = new Date();
         specificDate = d.getTime();
@@ -167,7 +182,8 @@ async function getSoonestTimeInMediumRooms(participants, specificDate, duration,
     }
 }
 
-async function getSoonestTimeInTehranRoom(participants, specificDate, duration, purpose, office, whiteboard, projector) {
+async function getSoonestTimeInTehranRoom(meetingInfo) {
+    let {participants, specificDate, duration, purpose, office, whiteboard, projector} = meetingInfo;
     if (!specificDate) {
         const d = new Date();
         specificDate = d.getTime();
@@ -237,7 +253,19 @@ function reorganize(participants, startingTime, endingTime, purpose, office, whi
 }
 
 class Meeting {
-    async constructor(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, roomIdentifier, organizerId) {
+    async constructor(meetingInfo, organizerId) {
+        const {
+            title,
+            descriptions,
+            participants,
+            startingTime,
+            endingTime,
+            purpose,
+            office,
+            whiteboard,
+            projector,
+            roomIdentifier
+        } = meetingInfo;
         this.title = title;
         this.description = descriptions;
         this.participants = participants;
@@ -249,7 +277,7 @@ class Meeting {
         this.projector = projector;
         this.roomIdentifier = roomIdentifier;
         this.organizerId = organizerId;
-        await dataAccess.createNewMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, roomIdentifier, organizerId)
+        await dataAccess.createNewMeeting(meetingInfo, organizerId)
 
     }
 
@@ -263,19 +291,23 @@ class Meeting {
         }
     }
 
-    async static setNewMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerId, isBeingEdited) {
+    async static setNewMeeting(meetingInfo, organizerId, isBeingEdited) {
+        // async static setNewMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerId, isBeingEdited) {
         try {
             //todo check if it's in the participants working hour
             let meetingIdentifier;
-            if (purpose === MeetingPurpose.INTERVIEW ||
-                purpose === MeetingPurpose.PDCHAT) {
-                meetingIdentifier = setMeetingWithFewParticipants(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerId, isBeingEdited)
-            } else if (purpose === MeetingPurpose.SPECREVIEW ||
-                participants.length > 8) {
-                meetingIdentifier = setAMeetingInTehranRoom(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerId, isBeingEdited)
-            } else if (purpose === MeetingPurpose.SPRINTPLANNING ||
-                purpose === MeetingPurpose.GROOMING) {
-                meetingIdentifier = setMeetingWithManyParticipants(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerId, isBeingEdited)
+            if (meetingInfo.purpose === MeetingPurpose.INTERVIEW ||
+                meetingInfo.purpose === MeetingPurpose.PDCHAT) {
+                // meetingIdentifier = setMeetingWithFewParticipants(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerId, isBeingEdited)
+                meetingIdentifier = setMeetingWithFewParticipants(meetingInfo, organizerId, isBeingEdited)
+            } else if (meetingInfo.purpose === MeetingPurpose.SPECREVIEW ||
+                meetingInfo.participants.length > 8) {
+                meetingIdentifier = setAMeetingInTehranRoom(meetingInfo, organizerId, isBeingEdited)
+                // meetingIdentifier = setAMeetingInTehranRoom(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerId, isBeingEdited)
+            } else if (meetingInfo.purpose === MeetingPurpose.SPRINTPLANNING ||
+                meetingInfo.purpose === MeetingPurpose.GROOMING) {
+                // meetingIdentifier = setMeetingWithManyParticipants(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerId, isBeingEdited)
+                meetingIdentifier = setMeetingWithManyParticipants(meetingInfo, organizerId, isBeingEdited)
             }
             return meetingIdentifier;
         } catch (err) {
@@ -283,16 +315,24 @@ class Meeting {
         }
     }
 
-    async static getSoonestAvailableTime(participants, specificDate, duration, purpose, office, whiteboard, projector) {
+    async static getSoonestAvailableTime(meetingInfo) {
+        // async static getSoonestAvailableTime(participants, specificDate, duration, purpose, office, whiteboard, projector) {
         try {
             let soonestAvailableTime;
-            if (purpose === MeetingPurpose.SPECREVIEW ||
-                participants.length > 8) {
-                soonestAvailableTime = await getSoonestTimeInTehranRoom(participants, specificDate, duration, purpose, office, whiteboard, projector);
-            } else if (purpose === MeetingPurpose.PDCHAT ||
-                purpose === MeetingPurpose.INTERVIEW) soonestAvailableTime = await getSoonestTimeInSmallRooms(participants, specificDate, duration, purpose, office, whiteboard, projector);
-            else if (purpose === MeetingPurpose.GROOMING ||
-                purpose === MeetingPurpose.SPRINTPLANNING) soonestAvailableTime = await getSoonestTimeInMediumRooms(participants, specificDate, duration, purpose, office, whiteboard, projector);
+            if (meetingInfo.purpose === MeetingPurpose.SPECREVIEW ||
+                meetingInfo.participants.length > 8) {
+                soonestAvailableTime = await getSoonestTimeInTehranRoom(meetingInfo);
+                // soonestAvailableTime = await getSoonestTimeInTehranRoom(participants, specificDate, duration, purpose, office, whiteboard, projector);
+            } else if (meetingInfo.purpose === MeetingPurpose.PDCHAT ||
+                meetingInfo.purpose === MeetingPurpose.INTERVIEW) {
+                soonestAvailableTime = await getSoonestTimeInSmallRooms(meetingInfo);
+            }
+            // meetingInfo.purpose === MeetingPurpose.INTERVIEW) soonestAvailableTime = await getSoonestTimeInSmallRooms(participants, specificDate, duration, purpose, office, whiteboard, projector);
+            else if (meetingInfo.purpose === MeetingPurpose.GROOMING ||
+                meetingInfo.purpose === MeetingPurpose.SPRINTPLANNING) {
+                soonestAvailableTime = await getSoonestTimeInMediumRooms(meetingInfo);
+            }
+            // meetingInfo.purpose === MeetingPurpose.SPRINTPLANNING) soonestAvailableTime = await getSoonestTimeInMediumRooms(participants, specificDate, duration, purpose, office, whiteboard, projector);
             return soonestAvailableTime;
         } catch (err) {
             throw err
@@ -310,13 +350,15 @@ class Meeting {
         }
     }
 
-    async editAMeeting(meetingIdentifier, title, descriptions, newParticipants, startingTime, endingTime, purpose, office, whiteboard, projector, id) {
-        if (id !== this.organizerId)
+    async editAMeeting(meetingInfo, requestSenderId) {
+        let {meetingIdentifier, title, descriptions, newParticipants, startingTime, endingTime, purpose, office, whiteboard, projector} = meetingInfo;
+        // async editAMeeting(meetingIdentifier, title, descriptions, newParticipants, startingTime, endingTime, purpose, office, whiteboard, projector, requestSenderId) {
+        if (requestSenderId !== this.organizerId)
             throw "only the meeting organizer can edit a meeting"
         try {
             if (title) {
                 this.title = title;
-                await dataAccess.changeTitle(meetingIdentifier, title)
+                await dataAccess.changeTitle(meetingIdentifier, meetingInfo.title)
             }
             if (descriptions) {
                 this.description = descriptions;
@@ -345,8 +387,9 @@ class Meeting {
                 this.projector = projector;
             }
             if (office) {
+                //todo ?!
                 await Meeting.setNewMeeting(this.title, this.description, this.participants, this.startingTime, this.endingTime, this.purpose, office, this.whiteboard, this.projector, this.organizerId, true);
-                await this.cancelAMeeting(meetingIdentifier, id, "organizer");
+                await this.cancelAMeeting(meetingIdentifier, requestSenderId, "organizer");
             }
         } catch (err) {
             throw err;

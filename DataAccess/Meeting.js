@@ -2,9 +2,9 @@ const {createMeeting, getListAllMeetingInTimeSlot, getListOfAllMeetingInRoom, ge
 
 class DataAccess{
 
-    async createNewMeeting(title, description, participants, start, end, purpose, office, whiteboard, projector, roomIdentifier, organizerId){
+    async createNewMeeting(meetingInfo, organizerId){
         try {
-            await createMeeting(title, description, participants, start, end, purpose, office, whiteboard, projector, roomIdentifier, organizerId)
+            await createMeeting(meetingInfo, organizerId)
         }catch (err){
             throw err;
         }

@@ -11,7 +11,6 @@ app.use(express.json());
 const requestHandler = RequestHandler.getInstance();
 
 app.post('/RoomManagement/SetMeeting', Token.authenticateActor, AccessManager.validateAccess, async (req, res) => {
-    // const {participants, specificDate, duration, purpose, office, whiteboard, projector} = req.body
     try {
         // const requestHandler = RequestHandler.getInstance();
         const meetingInfo = req.body;

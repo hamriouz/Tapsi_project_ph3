@@ -14,14 +14,15 @@ async function getMeetingById(meetingID) {
     return Meeting.findById(meetingID);
 }
 
-async function createMeeting(title, description, participants, start, end, purpose, office, whiteboard, projector, roomIdentifier, organizerId) {
+async function createMeeting(meetingInfo, organizerId) {
+    const {title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, roomIdentifier} = meetingInfo
     await connectToDataBase();
     const meeting = new Meeting({
         title: title,
-        description: description,
+        description: descriptions,
         participants: participants,
-        start: start,
-        end: end,
+        start: startingTime,
+        end: endingTime,
         purpose: purpose,
         office: office,
         whiteboard: whiteboard,
