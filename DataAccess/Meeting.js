@@ -1,20 +1,32 @@
-const {createMeeting, getListAllMeetingInTimeSlot, getListOfAllMeetingInRoom, getMeetingById, cancelChosenMeeting, changeTitle, changeDescription, changeProjector, changeParticipants, changePurpose, changeWhiteBoard} = require("./DataBaseManager/script");
+const {
+    createMeeting,
+    getListAllMeetingInTimeSlot,
+    getListOfAllMeetingInRoom,
+    getMeetingById,
+    cancelChosenMeeting,
+    changeTitle,
+    changeDescription,
+    changeProjector,
+    changeParticipants,
+    changePurpose,
+    changeWhiteBoard
+} = require("./DataBaseManager/script");
 
-class DataAccess{
+class DataAccess {
 
-    async createNewMeeting(meetingInfo, organizerId){
+    async createNewMeeting(meetingInfo, organizerId) {
         try {
             await createMeeting(meetingInfo, organizerId)
-        }catch (err){
+        } catch (err) {
             throw err;
         }
     }
 
-    async getMeetingByIdentifier(meetingIdentifier){
-       const meeting = await getMeetingById(meetingIdentifier);
-       if (meeting)
-           return meeting;
-       else throw 'No meeting has been set with the given identifier'
+    async getMeetingByIdentifier(meetingIdentifier) {
+        const meeting = await getMeetingById(meetingIdentifier);
+        if (meeting)
+            return meeting;
+        else throw 'No meeting has been set with the given identifier'
     }
 
     async cancelChosenMeeting(meetingIdentifier) {
@@ -25,18 +37,18 @@ class DataAccess{
         }
     }
 
-    async meetingsInTimeSlot(startingTime, endingTime){
+    async meetingsInTimeSlot(startingTime, endingTime) {
         try {
             return await getListAllMeetingInTimeSlot(startingTime, endingTime);
-        }catch (err){
+        } catch (err) {
             throw err;
         }
     }
 
-    async meetingsInRoom(roomIdentifier, date){
+    async meetingsInRoom(roomIdentifier, date) {
         try {
             return await getListOfAllMeetingInRoom(roomIdentifier, date);
-        }catch (err){
+        } catch (err) {
             throw err;
         }
     }
@@ -57,7 +69,7 @@ class DataAccess{
         }
     }
 
-    async changeParticipants(meetingIdentifier, newParticipants)  {
+    async changeParticipants(meetingIdentifier, newParticipants) {
         try {
             await changeParticipants(meetingIdentifier, newParticipants)
         } catch (err) {

@@ -57,7 +57,17 @@ async function setMeetingWithFewParticipants(meetingInfo, id, isBeingEdited) {
 }
 
 async function setMeetingWithManyParticipants(meetingInfo, id, isBeingEdited) {
-    const {title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector} = meetingInfo;
+    const {
+        title,
+        descriptions,
+        participants,
+        startingTime,
+        endingTime,
+        purpose,
+        office,
+        whiteboard,
+        projector
+    } = meetingInfo;
     let meetingIdentifier;
     let roomIdentifier;
 
@@ -253,7 +263,7 @@ function reorganize(participants, startingTime, endingTime, purpose, office, whi
 }
 
 class Meeting {
-    async constructor(meetingInfo, organizerId) {
+    constructor(meetingInfo, organizerId) {
         const {
             title,
             descriptions,
@@ -277,13 +287,13 @@ class Meeting {
         this.projector = projector;
         this.roomIdentifier = roomIdentifier;
         this.organizerId = organizerId;
-        await dataAccess.createNewMeeting(meetingInfo, organizerId)
+        // await dataAccess.createNewMeeting(meetingInfo, organizerId)
 
     }
 
     static async getMeetingByIdentifier(meetingIdentifier) {
         try {
-
+            //todo
             const meetingData = await dataAccess.getMeetingByIdentifier(meetingIdentifier)
             return new Meeting(meetingData.title, meetingData.description, meetingData.participants, meetingData.startingTime, meetingData.endingTime, meetingData.purpose, meetingData.office, meetingData.whiteboard, meetingData.projector, meetingData.roomIdentifier, meetingData.organizerId)
         } catch (err) {
@@ -291,7 +301,7 @@ class Meeting {
         }
     }
 
-    async static setNewMeeting(meetingInfo, organizerId, isBeingEdited) {
+    static async setNewMeeting(meetingInfo, organizerId, isBeingEdited) {
         // async static setNewMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerId, isBeingEdited) {
         try {
             //todo check if it's in the participants working hour
@@ -315,7 +325,7 @@ class Meeting {
         }
     }
 
-    async static getSoonestAvailableTime(meetingInfo) {
+    static async getSoonestAvailableTime(meetingInfo) {
         // async static getSoonestAvailableTime(participants, specificDate, duration, purpose, office, whiteboard, projector) {
         try {
             let soonestAvailableTime;
@@ -351,7 +361,19 @@ class Meeting {
     }
 
     async editAMeeting(meetingInfo, requestSenderId) {
-        let {meetingIdentifier, title, descriptions, newParticipants, startingTime, endingTime, purpose, office, whiteboard, projector} = meetingInfo;
+        //todo check with participants' working hour
+        let {
+            meetingIdentifier,
+            title,
+            descriptions,
+            newParticipants,
+            startingTime,
+            endingTime,
+            purpose,
+            office,
+            whiteboard,
+            projector
+        } = meetingInfo;
         // async editAMeeting(meetingIdentifier, title, descriptions, newParticipants, startingTime, endingTime, purpose, office, whiteboard, projector, requestSenderId) {
         if (requestSenderId !== this.organizerId)
             throw "only the meeting organizer can edit a meeting"
@@ -400,7 +422,7 @@ class Meeting {
         return getID(this.startingTime, this.endingTime, this.office, this.roomIdentifier)
     }
 
-    async static getMeetingInATimeSlot(startingTime, endingTime) {
+    static async getMeetingInATimeSlot(startingTime, endingTime) {
         try {
             return await dataAccess.meetingsInTimeSlot(startingTime, endingTime)
         } catch (err) {
@@ -408,7 +430,7 @@ class Meeting {
         }
     }
 
-    async static getMeetingInARoom(roomIdentifier, date) {
+    static async getMeetingInARoom(roomIdentifier, date) {
         try {
             return await dataAccess.meetingsInRoom(roomIdentifier, date)
         } catch (err) {

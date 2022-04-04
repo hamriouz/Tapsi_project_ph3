@@ -10,6 +10,7 @@ app.use(express.json());
 //todo checking the token must be done by the user micro service and we cant have a copy of the token class here!
 const requestHandler = RequestHandler.getInstance();
 
+//incomplete
 app.post('/RoomManagement/SetMeeting', Token.authenticateActor, AccessManager.validateAccess, async (req, res) => {
     try {
         // const requestHandler = RequestHandler.getInstance();
@@ -46,7 +47,7 @@ app.post('/RoomManagement/CancelMeeting', Token.authenticateActor, AccessManager
 
     }
 })
-
+//incomplete
 app.post('/RoomManagement/EditMeeting', Token.authenticateActor, AccessManager.validateAccess, async (req, res) => {
     // const {meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector} = req.body
     const meetingInfo = req.body;
@@ -80,7 +81,6 @@ app.post('/RoomManagement/GetMeetingInRoom', Token.authenticateActor, AccessMana
         res.status(200).send(meetingsInRoom);
     } catch (err) {
         res.status(Exception.getStatusByExceptionMessage(err)).send(err);
-
     }
 })
 

@@ -1,5 +1,4 @@
 const ApiGroups = require('./ApiGroups');
-const UserDomain = require("../../Handler/Organizer");
 
 class AccessManager {
     //todo

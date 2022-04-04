@@ -1,14 +1,12 @@
-// const organizerDomain = require("../Domain/Organizer");
-// const AdminDomain = require("../Domain/Admin");
 const Meeting = require('../Domain/Meeting');
 
 class RequestHandler{
-    async setMeeting(meetingInfo, id) {
-        const {title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector,} = meetingInfo
+    async setMeeting(meetingInfo, requestSenderId) {
+        const {title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector} = meetingInfo
         if (!(title && descriptions && participants && startingTime && endingTime && purpose && office) && (whiteboard !== undefined && projector !== undefined))
             throw ("please fill all the information");
         try {
-            return await Meeting.setNewMeeting(meetingInfo, id, false);
+            return await Meeting.setNewMeeting(meetingInfo, requestSenderId, false);
             // const meeting = new Meeting()
         } catch (err) {
             throw err
