@@ -287,6 +287,7 @@ class Meeting {
         this.projector = projector;
         this.roomIdentifier = roomIdentifier;
         this.organizerId = organizerId;
+        //todo 
         // await dataAccess.createNewMeeting(meetingInfo, organizerId)
 
     }

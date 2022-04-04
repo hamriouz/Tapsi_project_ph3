@@ -1,3 +1,4 @@
+
 const PROTO_PATH = __dirname + '/room.proto';
 const grpc = require('grpc');
 const protoLoader = require('@grpc/proto-loader');
@@ -18,7 +19,23 @@ let room_proto = grpc.loadPackageDefinition(packageDefinition).room;
 let client = new room_proto.Room('localhose:4500',
     grpc.credentials.createInsecure());
 
-class roomClient{
+
+//todo move to room server
+/*
+function getRoomIdentifier(call, callback){
+        try{
+                callback(null, {
+                        roomIdentifier: await //todo
+                });
+        }catch (err){
+                callback(null, {
+                        roomIdentifier: null
+                });
+        }
+}
+*/
+
+/*class roomClient{
     async static getRoomCapacityByIdentifier(roomIdentifier){
 
         client.getRoomCapacityByIdentifier = Promise.promisify(client.getRoomCapacityByIdentifier);
@@ -31,6 +48,11 @@ class roomClient{
     }
 }
 
+
+
+
+
+*/
 
 
 
