@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package userPackage;
+
+service User {
+  rpc getUserWorkingHour (WorkingHourRequest) returns (WorkingHourResponse){}
+  rpc isWantedRole(UserTokenRequest) returns (TokenRoleResponse){}
+  rpc canCancel(UserTokenRequest) returns(TokenRoleResponse){}
+
+}
+
+message UserTokenRequest{
+  string token = 1;
+  string role = 2;
+
+}
+
+message WorkingHourRequest {
+  string id = 1;
+
+}
+
+message WorkingHourResponse {
+  string workingHour = 1;
+
+}
+
+message TokenRoleResponse{
+  bool isWantedRole = 1;
+
+}

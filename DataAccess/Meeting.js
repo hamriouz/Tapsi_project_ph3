@@ -25,7 +25,7 @@ class DataAccess {
     async getMeetingByIdentifier(meetingIdentifier) {
         const meeting = await getMeetingById(meetingIdentifier);
         if (meeting)
-            return meeting;
+            return meeting[0];
         else throw 'No meeting has been set with the given identifier'
     }
 

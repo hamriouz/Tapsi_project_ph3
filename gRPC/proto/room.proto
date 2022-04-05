@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package room;
+
+service Room {
+  rpc getRoomIdentifier (RoomIdentifierRequest) returns (RoomIdentifierResponse) {}
+  rpc getRoomCapacity (RoomCapacityRequest) returns (RoomCapacityResponse) {}
+}
+
+message RoomIdentifierRequest{
+  string office = 1;
+  string roomName = 2;
+}
+
+message RoomIdentifierResponse{
+  string roomIdentifier = 1;
+}
+
+message RoomCapacityRequest{
+  string roomIdentifier = 1;
+}
+
+message RoomCapacityResponse{
+  int32 capacity = 1;
+}
+
+

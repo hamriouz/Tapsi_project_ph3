@@ -1,5 +1,6 @@
 const {MeetingPurpose} = require("../Util/Enums/MeetingPurpose");
 const DataAccess = require("../DataAccess/Meeting");
+const roomClient = require('../gRPC/client/roomClient');
 const {getID, isWantedRoomFree, cancelChosenMeeting, changeProjector} = require("../DataAccess/DataBaseManager/script");
 
 const dataAccess = DataAccess.getInstance();
@@ -47,6 +48,7 @@ async function setMeetingWithFewParticipants(meetingInfo, id, isBeingEdited) {
 
     if (roomIdentifier) {
         let meeting = new Meeting(meetingInfo, id);
+        await dataAccess.createNewMeeting(meetingInfo, id)
         meetingIdentifier = await meeting.getMeetingID();
         return meetingIdentifier;
     } else {
@@ -103,6 +105,7 @@ async function setMeetingWithManyParticipants(meetingInfo, id, isBeingEdited) {
 
     if (roomIdentifier) {
         let meeting = new Meeting(meetingInfo, id);
+        await dataAccess.createNewMeeting(meetingInfo, id)
         meetingIdentifier = await meeting.getMeetingID();
         return meetingIdentifier;
     } else {
@@ -124,6 +127,7 @@ async function setAMeetingInTehranRoom(meetingInfo, id, isBeingEdited) {
 
     if (roomIdentifier) {
         let meeting = new Meeting(meetingInfo, id);
+        await dataAccess.createNewMeeting(meetingInfo, id)
         meetingIdentifier = await meeting.getMeetingID();
         return meetingIdentifier;
     } else {
@@ -210,15 +214,14 @@ async function getSoonestTimeInTehranRoom(meetingInfo) {
 }
 
 async function editTime(meetingIdentifier, startingTime, endingTime) {
-    //todo check if it's in the participants working hour
-
     const meeting = Meeting.getMeetingByIdentifier(meetingIdentifier);
     await cancelChosenMeeting(meetingIdentifier);
     if (!startingTime)
         startingTime = meeting.start;
     if (!endingTime)
         endingTime = meeting.end;
-    await Meeting.setNewMeeting(meeting.title, meeting.description, meeting.participants, startingTime, endingTime, meeting.purpose, meeting.office, meeting.whiteboard, meeting.projector, meeting.organizer, true);
+    let newData = changeTime(meeting, startingTime, endingTime);
+    await Meeting.setNewMeeting(newData, meeting.organizer, true);
 
 }
 
@@ -230,7 +233,8 @@ async function editParticipants(meetingIdentifier, oldParticipant, newParticipan
     else {
         try {
             await cancelChosenMeeting(meetingIdentifier);
-            await Meeting.setNewMeeting(meeting.title, meeting.description, newParticipants, meeting.start, meeting.end, meeting.purpose, meeting.office, meeting.whiteboard, meeting.projector, meeting.organizer, true);
+            let newData = changeParticipants(meeting, newParticipants);
+            await Meeting.setNewMeeting(newData, meeting.organizer, true);
         } catch (err) {
             throw err;
         }
@@ -248,18 +252,72 @@ function getMeetingRoomCapacity(meetingIdentifier) {
     let roomCapacity;
     const meeting = Meeting.getMeetingByIdentifier(meetingIdentifier);
     const roomIdentifier = meeting[0].roomIdentifier;
-    //todo get room capacity based on the room identifier
+    //todo does it need await?
+    roomCapacity = roomClient.getRoomCapacity(roomIdentifier);
     return roomCapacity;
 }
 
 function getRoomIdentifier(roomName, office) {
-    let roomIdentifier;
-    //todo get room identifier based on the name and office
+    //todo does it need await?
+    let roomIdentifier = roomClient.getRoomIdentifier(office, roomName);
     return roomIdentifier;
 }
 
 function reorganize(participants, startingTime, endingTime, purpose, office, whiteboard, projector) {
     //todo
+}
+
+function isInParticipantsWorkingHour(participants, startingTime, endingTime) {
+//throw exception
+    //todo
+}
+
+function changeOffice(meeting, newOffice) {
+    return {
+        "title": meeting.title,
+        "descriptions": meeting.descriptions,
+        "participants": meeting.participants,
+        "startingTime": meeting.startingTime,
+        "endingTime": meeting.endingTime,
+        "purpose": meeting.purpose,
+        "office": newOffice,
+        "whiteboard": meeting.whiteboard,
+        "projector": meeting.projector,
+        "roomIdentifier": meeting.roomIdentifier,
+        "organizerId": meeting.organizerId
+    }
+}
+
+function changeTime(meeting, newStartingTime, newEndingTime) {
+    return {
+        "title": meeting.title,
+        "descriptions": meeting.descriptions,
+        "participants": meeting.participants,
+        "startingTime": newStartingTime,
+        "endingTime": newEndingTime,
+        "purpose": meeting.purpose,
+        "office": meeting.office,
+        "whiteboard": meeting.whiteboard,
+        "projector": meeting.projector,
+        "roomIdentifier": meeting.roomIdentifier,
+        "organizerId": meeting.organizerId
+    }
+}
+
+function changeParticipants(meeting, participants) {
+    return {
+        "title": meeting.title,
+        "descriptions": meeting.descriptions,
+        "participants": participants,
+        "startingTime": meeting.startingTime,
+        "endingTime": meeting.endingTime,
+        "purpose": meeting.purpose,
+        "office": meeting.office,
+        "whiteboard": meeting.whiteboard,
+        "projector": meeting.projector,
+        "roomIdentifier": meeting.roomIdentifier,
+        "organizerId": meeting.organizerId
+    }
 }
 
 class Meeting {
@@ -287,16 +345,12 @@ class Meeting {
         this.projector = projector;
         this.roomIdentifier = roomIdentifier;
         this.organizerId = organizerId;
-        //todo 
-        // await dataAccess.createNewMeeting(meetingInfo, organizerId)
-
     }
 
     static async getMeetingByIdentifier(meetingIdentifier) {
         try {
-            //todo
             const meetingData = await dataAccess.getMeetingByIdentifier(meetingIdentifier)
-            return new Meeting(meetingData.title, meetingData.description, meetingData.participants, meetingData.startingTime, meetingData.endingTime, meetingData.purpose, meetingData.office, meetingData.whiteboard, meetingData.projector, meetingData.roomIdentifier, meetingData.organizerId)
+            return new Meeting(meetingData, meetingData.organizerId)
         } catch (err) {
             throw err;
         }
@@ -305,7 +359,7 @@ class Meeting {
     static async setNewMeeting(meetingInfo, organizerId, isBeingEdited) {
         // async static setNewMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerId, isBeingEdited) {
         try {
-            //todo check if it's in the participants working hour
+            isInParticipantsWorkingHour(meetingInfo.participants, meetingInfo.startingTime, meetingInfo.endingTime)
             let meetingIdentifier;
             if (meetingInfo.purpose === MeetingPurpose.INTERVIEW ||
                 meetingInfo.purpose === MeetingPurpose.PDCHAT) {
@@ -362,7 +416,6 @@ class Meeting {
     }
 
     async editAMeeting(meetingInfo, requestSenderId) {
-        //todo check with participants' working hour
         let {
             meetingIdentifier,
             title,
@@ -388,14 +441,20 @@ class Meeting {
                 await dataAccess.changeDescription(meetingIdentifier, descriptions);
             }
             if (newParticipants) {
+                isInParticipantsWorkingHour(newParticipants, this.startingTime, this.endingTime);
                 await editParticipants(meetingIdentifier, this.participants, newParticipants);
                 this.participants = newParticipants;
             }
             if (startingTime || endingTime) {
+                if (!startingTime)
+                    startingTime = this.startingTime;
+                if (!endingTime)
+                    endingTime = this.endingTime;
+                isInParticipantsWorkingHour(this.participants, startingTime, endingTime);
                 await editTime(meetingIdentifier, startingTime, endingTime);
-                if (startingTime)
+                if (startingTime !== this.startingTime)
                     this.startingTime = startingTime;
-                if (endingTime)
+                if (endingTime !== this.endingTime)
                     this.endingTime = endingTime;
             }
             if (purpose) {
@@ -410,8 +469,8 @@ class Meeting {
                 this.projector = projector;
             }
             if (office) {
-                //todo ?!
-                await Meeting.setNewMeeting(this.title, this.description, this.participants, this.startingTime, this.endingTime, this.purpose, office, this.whiteboard, this.projector, this.organizerId, true);
+                let changedData = changeOffice(this, office);
+                await Meeting.setNewMeeting(changedData, this.organizerId, true);
                 await this.cancelAMeeting(meetingIdentifier, requestSenderId, "organizer");
             }
         } catch (err) {

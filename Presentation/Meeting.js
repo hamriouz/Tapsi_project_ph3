@@ -7,11 +7,12 @@ const app = express();
 
 app.use(express.json());
 
-//todo checking the token must be done by the user micro service and we cant have a copy of the token class here!
 const requestHandler = RequestHandler.getInstance();
 
+//todo call the token checker functions
+
 //incomplete
-app.post('/RoomManagement/SetMeeting', Token.authenticateActor, AccessManager.validateAccess, async (req, res) => {
+app.post('/RoomManagement/SetMeeting',async (req, res) => {
     try {
         // const requestHandler = RequestHandler.getInstance();
         const meetingInfo = req.body;
@@ -23,7 +24,7 @@ app.post('/RoomManagement/SetMeeting', Token.authenticateActor, AccessManager.va
     }
 })
 
-app.post('/RoomManagement/GetFirstAvailableTime', Token.authenticateActor, AccessManager.validateAccess, async (req, res) => {
+app.post('/RoomManagement/GetFirstAvailableTime',async (req, res) => {
     try {
         // const requestHandler = RequestHandler.getInstance();
         const meetingInfo = req.body;
@@ -36,7 +37,7 @@ app.post('/RoomManagement/GetFirstAvailableTime', Token.authenticateActor, Acces
     }
 })
 
-app.post('/RoomManagement/CancelMeeting', Token.authenticateActor, AccessManager.validateAccess, async (req, res) => {
+app.post('/RoomManagement/CancelMeeting',async (req, res) => {
     const {meetingIdentifier} = req.body
     try {
         // const requestHandler = RequestHandler.getInstance();
@@ -48,7 +49,7 @@ app.post('/RoomManagement/CancelMeeting', Token.authenticateActor, AccessManager
     }
 })
 //incomplete
-app.post('/RoomManagement/EditMeeting', Token.authenticateActor, AccessManager.validateAccess, async (req, res) => {
+app.post('/RoomManagement/EditMeeting',async (req, res) => {
     // const {meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector} = req.body
     const meetingInfo = req.body;
     try {
@@ -61,7 +62,7 @@ app.post('/RoomManagement/EditMeeting', Token.authenticateActor, AccessManager.v
     }
 })
 
-app.post('/RoomManagement/GetMeetingInTimeSlot', Token.authenticateActor, AccessManager.validateAccess, async (req, res) => {
+app.post('/RoomManagement/GetMeetingInTimeSlot',async (req, res) => {
     const {startingTime, endingTime} = req.body
     try {
         // const requestHandler = RequestHandler.getInstance()
@@ -73,7 +74,7 @@ app.post('/RoomManagement/GetMeetingInTimeSlot', Token.authenticateActor, Access
     }
 })
 
-app.post('/RoomManagement/GetMeetingInRoom', Token.authenticateActor, AccessManager.validateAccess, async (req, res) => {
+app.post('/RoomManagement/GetMeetingInRoom',async (req, res) => {
     const {roomIdentifier, date} = req.body
     try {
         // const requestHandler = RequestHandler.getInstance();
