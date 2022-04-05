@@ -6,7 +6,6 @@ const {
     cancelChosenMeeting,
     changeTitle,
     changeDescription,
-    changeProjector,
     changeParticipants,
     changePurpose,
     changeWhiteBoard

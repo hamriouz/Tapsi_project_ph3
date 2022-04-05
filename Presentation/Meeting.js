@@ -1,18 +1,16 @@
 const express = require('express');
-const Token = require('./AccessManager/Token');
-const AccessManager = require('./AccessManager/AccessManager');
 const RequestHandler = require('../Handler/RequestHandler');
+const AccessHandler = require('../Handler/AccessHandler');
 const Exception = require('../Util/Exception');
 const app = express();
 
 app.use(express.json());
 
 const requestHandler = RequestHandler.getInstance();
-
-//todo call the token checker functions
+const accessHandler = AccessHandler.getInstance();
 
 //incomplete
-app.post('/RoomManagement/SetMeeting',async (req, res) => {
+app.post('/RoomManagement/SetMeeting', accessHandler.isEmployee ,async (req, res) => {
     try {
         // const requestHandler = RequestHandler.getInstance();
         const meetingInfo = req.body;
@@ -24,7 +22,7 @@ app.post('/RoomManagement/SetMeeting',async (req, res) => {
     }
 })
 
-app.post('/RoomManagement/GetFirstAvailableTime',async (req, res) => {
+app.post('/RoomManagement/GetFirstAvailableTime', accessHandler.isEmployee, async (req, res) => {
     try {
         // const requestHandler = RequestHandler.getInstance();
         const meetingInfo = req.body;
@@ -37,7 +35,7 @@ app.post('/RoomManagement/GetFirstAvailableTime',async (req, res) => {
     }
 })
 
-app.post('/RoomManagement/CancelMeeting',async (req, res) => {
+app.post('/RoomManagement/CancelMeeting', accessHandler.canCancel, async (req, res) => {
     const {meetingIdentifier} = req.body
     try {
         // const requestHandler = RequestHandler.getInstance();
@@ -49,7 +47,7 @@ app.post('/RoomManagement/CancelMeeting',async (req, res) => {
     }
 })
 //incomplete
-app.post('/RoomManagement/EditMeeting',async (req, res) => {
+app.post('/RoomManagement/EditMeeting', accessHandler.isEmployee, async (req, res) => {
     // const {meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector} = req.body
     const meetingInfo = req.body;
     try {
@@ -62,7 +60,7 @@ app.post('/RoomManagement/EditMeeting',async (req, res) => {
     }
 })
 
-app.post('/RoomManagement/GetMeetingInTimeSlot',async (req, res) => {
+app.post('/RoomManagement/GetMeetingInTimeSlot', accessHandler.isAdmin, async (req, res) => {
     const {startingTime, endingTime} = req.body
     try {
         // const requestHandler = RequestHandler.getInstance()
@@ -74,7 +72,7 @@ app.post('/RoomManagement/GetMeetingInTimeSlot',async (req, res) => {
     }
 })
 
-app.post('/RoomManagement/GetMeetingInRoom',async (req, res) => {
+app.post('/RoomManagement/GetMeetingInRoom',accessHandler.isAdmin, async (req, res) => {
     const {roomIdentifier, date} = req.body
     try {
         // const requestHandler = RequestHandler.getInstance();

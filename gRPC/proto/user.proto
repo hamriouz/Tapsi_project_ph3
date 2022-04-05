@@ -5,7 +5,7 @@ package userPackage;
 service User {
   rpc getUserWorkingHour (WorkingHourRequest) returns (WorkingHourResponse){}
   rpc isWantedRole(UserTokenRequest) returns (TokenRoleResponse){}
-  rpc canCancel(UserTokenRequest) returns(TokenRoleResponse){}
+  rpc canCancel(CanCancelRequest) returns(TokenRoleResponse){}
 
 }
 
@@ -13,6 +13,10 @@ message UserTokenRequest{
   string token = 1;
   string role = 2;
 
+}
+
+message CanCancelRequest{
+  string token = 1;
 }
 
 message WorkingHourRequest {

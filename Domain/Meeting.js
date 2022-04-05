@@ -28,21 +28,21 @@ async function setMeetingWithFewParticipants(meetingInfo, id, isBeingEdited) {
         let isKarajFree = isWantedRoomFree("Karaj", office, startingTime, endingTime);
 
         if (isBabolFree)
-            roomIdentifier = getRoomIdentifier("Babol", office);
+            roomIdentifier = await getRoomIdentifier("Babol", office);
         else if (isAhvazFree)
-            roomIdentifier = getRoomIdentifier("Ahvaz", office);
+            roomIdentifier = await getRoomIdentifier("Ahvaz", office);
         else if (isIsfahanFree)
-            roomIdentifier = getRoomIdentifier("Isfahan", office);
+            roomIdentifier = await getRoomIdentifier("Isfahan", office);
         else if (isRashtFree)
-            roomIdentifier = getRoomIdentifier("Rasht", office);
+            roomIdentifier = await getRoomIdentifier("Rasht", office);
         else if (isKarajFree)
-            roomIdentifier = getRoomIdentifier("Karaj", office);
+            roomIdentifier = await getRoomIdentifier("Karaj", office);
         else roomIdentifier = reorganize(participants, startingTime, endingTime, purpose, office, whiteboard, projector);
 
     } else if (participants.length === 4) {
         let isKarajFree = isWantedRoomFree("Karaj", office, startingTime, endingTime);
         if (isKarajFree)
-            roomIdentifier = getRoomIdentifier("Karaj", office);
+            roomIdentifier = await getRoomIdentifier("Karaj", office);
         else roomIdentifier = reorganize(participants, startingTime, endingTime, purpose, office, whiteboard, projector);
     }
 
@@ -79,11 +79,11 @@ async function setMeetingWithManyParticipants(meetingInfo, id, isBeingEdited) {
         let isMashhadFree = isWantedRoomFree("Mashhad", office, startingTime, endingTime);
 
         if (isBabolFree)
-            roomIdentifier = getRoomIdentifier("Babol", office);
+            roomIdentifier = await getRoomIdentifier("Babol", office);
         else if (isShirazFree)
-            roomIdentifier = getRoomIdentifier("Shiraz", office);
+            roomIdentifier = await getRoomIdentifier("Shiraz", office);
         else if (isMashhadFree)
-            roomIdentifier = getRoomIdentifier("Mashhad", office);
+            roomIdentifier = await getRoomIdentifier("Mashhad", office);
         else roomIdentifier = reorganize(participants, startingTime, endingTime, purpose, office, whiteboard, projector);
 
     } else if (participants.length === 5 || participants.length === 6) {
@@ -91,15 +91,15 @@ async function setMeetingWithManyParticipants(meetingInfo, id, isBeingEdited) {
         let isMashhadFree = isWantedRoomFree("Mashhad", office, startingTime, endingTime);
 
         if (isShirazFree)
-            roomIdentifier = getRoomIdentifier("Shiraz", office);
+            roomIdentifier = await getRoomIdentifier("Shiraz", office);
         else if (isMashhadFree)
-            roomIdentifier = getRoomIdentifier("Mashhad", office);
+            roomIdentifier = await getRoomIdentifier("Mashhad", office);
         else roomIdentifier = reorganize(participants, startingTime, endingTime, purpose, office, whiteboard, projector);
 
     } else if (participants.length > 6 && participants.length < 9) {
         let isMashhadFree = isWantedRoomFree("Mashhad", office, startingTime, endingTime);
         if (isMashhadFree)
-            roomIdentifier = getRoomIdentifier("Mashhad", office);
+            roomIdentifier = await getRoomIdentifier("Mashhad", office);
         else roomIdentifier = reorganize(participants, startingTime, endingTime, purpose, office, whiteboard, projector);
     }
 
@@ -123,7 +123,7 @@ async function setAMeetingInTehranRoom(meetingInfo, id, isBeingEdited) {
 
     let isTehranFree = isWantedRoomFree("Tehran", office, startingTime, endingTime);
     if (isTehranFree)
-        roomIdentifier = getRoomIdentifier("Tehran", office);
+        roomIdentifier = await getRoomIdentifier("Tehran", office);
 
     if (roomIdentifier) {
         let meeting = new Meeting(meetingInfo, id);
@@ -227,7 +227,7 @@ async function editTime(meetingIdentifier, startingTime, endingTime) {
 
 async function editParticipants(meetingIdentifier, oldParticipant, newParticipants) {
     const meeting = Meeting.getMeetingByIdentifier(meetingIdentifier);
-    const meetingCapacity = getMeetingRoomCapacity(meeting.roomIdentifier);
+    const meetingCapacity = await getMeetingRoomCapacity(meeting.roomIdentifier);
     if (oldParticipant.length === newParticipants.length ||
         newParticipants.length <= meetingCapacity) await dataAccess.changeParticipants(meetingIdentifier, newParticipants)
     else {
@@ -248,18 +248,16 @@ async function editProjector(meetingIdentifier, projector) {
     else await changeProjector(meetingIdentifier, projector);
 }
 
-function getMeetingRoomCapacity(meetingIdentifier) {
+async function getMeetingRoomCapacity(meetingIdentifier) {
     let roomCapacity;
     const meeting = Meeting.getMeetingByIdentifier(meetingIdentifier);
     const roomIdentifier = meeting[0].roomIdentifier;
-    //todo does it need await?
-    roomCapacity = roomClient.getRoomCapacity(roomIdentifier);
+    roomCapacity = await roomClient.getRoomCapacity(roomIdentifier);
     return roomCapacity;
 }
 
-function getRoomIdentifier(roomName, office) {
-    //todo does it need await?
-    let roomIdentifier = roomClient.getRoomIdentifier(office, roomName);
+async function getRoomIdentifier(roomName, office) {
+    let roomIdentifier = await roomClient.getRoomIdentifier(office, roomName);
     return roomIdentifier;
 }
 

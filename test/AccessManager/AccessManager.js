@@ -1,7 +1,6 @@
 const ApiGroups = require('./ApiGroups');
 
 class AccessManager {
-    //todo
     static validateAccess(req, res, next) {
         const {role: tokenRole} = req;
         if (ApiGroups[tokenRole] && ApiGroups[tokenRole].routes.some(route => req.route === route)) {

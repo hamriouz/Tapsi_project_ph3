@@ -29,9 +29,9 @@ class userClient {
         return await client.isWantedRole({"token": token, "role": role});
     }
 
-    static async canCancel(token, role){
+    static async canCancel(token){
         client.canCancel = Promise.promisify(client.canCancel);
-        return await client.canCancel({"token": token, "role": role})
+        return await client.canCancel({"token": token})
     }
 }
 
