@@ -1,6 +1,7 @@
 const {MeetingPurpose} = require("../Util/Enums/MeetingPurpose");
 const DataAccess = require("../DataAccess/Meeting");
 const roomClient = require('../gRPC/client/roomClient');
+const userClient = require('../gRPC/client/userClient');
 const {getID, isWantedRoomFree, cancelChosenMeeting, changeProjector} = require("../DataAccess/DataBaseManager/script");
 
 const dataAccess = DataAccess.getInstance();
@@ -257,8 +258,7 @@ async function getMeetingRoomCapacity(meetingIdentifier) {
 }
 
 async function getRoomIdentifier(roomName, office) {
-    let roomIdentifier = await roomClient.getRoomIdentifier(office, roomName);
-    return roomIdentifier;
+    return await roomClient.getRoomIdentifier(office, roomName);
 }
 
 function reorganize(participants, startingTime, endingTime, purpose, office, whiteboard, projector) {
@@ -266,8 +266,15 @@ function reorganize(participants, startingTime, endingTime, purpose, office, whi
 }
 
 function isInParticipantsWorkingHour(participants, startingTime, endingTime) {
-//throw exception
-    //todo
+
+    participants.forEach(participant => {
+        let workingHour = userClient.getUserWorkingHour(participant);
+        let fields = workingHour.split('-');
+        let startWorkingHour = fields[0];
+        let endWorkingHour = fields[1];
+        if (!(startWorkingHour <= startingTime && endWorkingHour >= endingTime))
+            throw "The meeting is not in participant(s) working hour! Please change the meeting's time!"
+    })
 }
 
 function changeOffice(meeting, newOffice) {

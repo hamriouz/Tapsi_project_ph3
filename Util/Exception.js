@@ -20,6 +20,9 @@ class Exception {
             case
             "Invalid input!"
             :
+            case
+            "The meeting is not in participant(s) working hour! Please change the meeting's time!"
+            :
                 return 403;
             case
             "No meeting found in the wanted time slot!"
