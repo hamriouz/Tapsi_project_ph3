@@ -6,7 +6,7 @@ const UndefinedException = require('../Util/ExceptionHandler/UndefinedException'
 
 const accessHandler = AccessHandler.getInstance();
 
-app.post('/RoomManagement/Meeting', accessHandler.isEmployee ,async (req, res) => {
+app.post('/room-management/meeting', accessHandler.isEmployee ,async (req, res) => {
     try {
         const meetingInfo = req.body;
         UndefinedException.allMeetingInfo(meetingInfo);
@@ -17,7 +17,7 @@ app.post('/RoomManagement/Meeting', accessHandler.isEmployee ,async (req, res) =
     }
 })
 
-app.post('/RoomManagement/FirstAvailableTime', accessHandler.isEmployee, async (req, res) => {
+app.post('/room-management/first-available-time', accessHandler.isEmployee, async (req, res) => {
     try {
         const meetingInfo = req.body;
         UndefinedException.firstAvailableTime(meetingInfo);
@@ -29,7 +29,7 @@ app.post('/RoomManagement/FirstAvailableTime', accessHandler.isEmployee, async (
     }
 })
 
-app.post('/RoomManagement/CancelMeeting', accessHandler.canCancel, async (req, res) => {
+app.post('/room-management/cancel-meeting', accessHandler.canCancel, async (req, res) => {
     const {meetingIdentifier} = req.body
     try {
         UndefinedException.meetingIdentifier(meetingIdentifier);
@@ -41,7 +41,7 @@ app.post('/RoomManagement/CancelMeeting', accessHandler.canCancel, async (req, r
     }
 })
 
-app.put('/RoomManagement/EditMeeting', accessHandler.isEmployee, async (req, res) => {
+app.put('/room-management/edit-meeting', accessHandler.isEmployee, async (req, res) => {
     const meetingInfo = req.body;
     try {
         await RequestHandler.editMeeting(meetingInfo, req.id);
@@ -52,7 +52,7 @@ app.put('/RoomManagement/EditMeeting', accessHandler.isEmployee, async (req, res
     }
 })
 
-app.post('/RoomManagement/MeetingInTimeSlot', accessHandler.isAdmin, async (req, res) => {
+app.post('/room-management/meeting-in-time-slot', accessHandler.isAdmin, async (req, res) => {
     const {startingTime, endingTime} = req.body
     try {
         UndefinedException.timeSlot(startingTime, endingTime);
@@ -64,7 +64,7 @@ app.post('/RoomManagement/MeetingInTimeSlot', accessHandler.isAdmin, async (req,
     }
 })
 
-app.post('/RoomManagement/MeetingsInRoom',accessHandler.isAdmin, async (req, res) => {
+app.post('/room-management/meetings-in-room',accessHandler.isAdmin, async (req, res) => {
     const {roomIdentifier, date} = req.body
     try {
         UndefinedException.meetingInRoom(roomIdentifier, date);
