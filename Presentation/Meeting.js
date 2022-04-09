@@ -6,7 +6,7 @@ const UndefinedException = require('../Util/ExceptionHandler/UndefinedException'
 
 const accessHandler = AccessHandler.getInstance();
 
-app.post('/RoomManagement/CreateMeeting', accessHandler.isEmployee ,async (req, res) => {
+app.post('/RoomManagement/Meeting', accessHandler.isEmployee ,async (req, res) => {
     try {
         const meetingInfo = req.body;
         UndefinedException.allMeetingInfo(meetingInfo);

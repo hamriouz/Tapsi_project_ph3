@@ -2,6 +2,7 @@ const {MeetingPurpose} = require("../Util/Enums/MeetingPurpose");
 const DataAccess = require("../DataAccess/Meeting");
 const roomClient = require('../gRPC/client/roomClient');
 const userClient = require('../gRPC/client/userClient');
+
 const {
     getID,
     isWantedRoomFree,
@@ -76,8 +77,8 @@ class Meeting {
             let soonestAvailableTime;
             if (meetingInfo.purpose === MeetingPurpose.SPECREVIEW ||
                 meetingInfo.participants.length > 8) {
-                soonestAvailableTime = await getSoonestTimeInTehranRoom(meetingInfo);
-                // soonestAvailableTime = await getSoonestTimeInTehranRoom(participants, specificDate, duration, purpose, office, whiteboard, projector);
+                soonestAvailableTime = await getSoonestTimeInBigRooms(meetingInfo);
+                // soonestAvailableTime = await getSoonestTimeInBigRooms(participants, specificDate, duration, purpose, office, whiteboard, projector);
             } else if (meetingInfo.purpose === MeetingPurpose.PDCHAT ||
                 meetingInfo.purpose === MeetingPurpose.INTERVIEW) {
                 soonestAvailableTime = await getSoonestTimeInSmallRooms(meetingInfo);
@@ -178,6 +179,7 @@ class Meeting {
     }
 }
 
+//todo
 async function setMeetingWithFewParticipants(meetingInfo, id, isBeingEdited) {
     const {title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector} = meetingInfo;
     let meetingIdentifier;
@@ -219,6 +221,7 @@ async function setMeetingWithFewParticipants(meetingInfo, id, isBeingEdited) {
     }
 }
 
+//todo
 async function setMeetingWithManyParticipants(meetingInfo, id, isBeingEdited) {
     const {title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector} = meetingInfo;
     let meetingIdentifier;
@@ -264,6 +267,7 @@ async function setMeetingWithManyParticipants(meetingInfo, id, isBeingEdited) {
 
 }
 
+//todo
 async function setAMeetingInTehranRoom(meetingInfo, id, isBeingEdited) {
     const {startingTime, endingTime, office} = meetingInfo;
     let meetingIdentifier;
@@ -285,6 +289,7 @@ async function setAMeetingInTehranRoom(meetingInfo, id, isBeingEdited) {
     }
 }
 
+//todo
 async function getSoonestTimeInSmallRooms(meetingInfo) {
     let {participants, specificDate, duration, office, projector} = meetingInfo;
     if (projector === true)
@@ -313,6 +318,7 @@ async function getSoonestTimeInSmallRooms(meetingInfo) {
     }
 }
 
+//todo
 async function getSoonestTimeInMediumRooms(meetingInfo) {
     let {participants, specificDate, duration, purpose, office, whiteboard, projector} = meetingInfo
     if (!specificDate) {
@@ -344,7 +350,8 @@ async function getSoonestTimeInMediumRooms(meetingInfo) {
     }
 }
 
-async function getSoonestTimeInTehranRoom(meetingInfo) {
+//todo
+async function getSoonestTimeInBigRooms(meetingInfo) {
     let {participants, specificDate, duration, purpose, office, whiteboard, projector} = meetingInfo;
     if (!specificDate) {
         const d = new Date();
@@ -477,9 +484,11 @@ function changeParticipants(meeting, participants) {
 module.exports = Meeting
 
 
-/*
 
-function reorganize(participants, startingTime, endingTime, purpose, office, whiteboard, projector) {
+
+
+/*
+function set2(participants, startingTime, endingTime, purpose, office, whiteboard, projector) {
     let roomIdentifier;
     let meetingsInTimeSlot = Meeting.getMeetingInATimeSlot(startingTime, endingTime);
     if (purpose === MeetingPurpose.PDCHAT || purpose === MeetingPurpose.INTERVIEW) {
