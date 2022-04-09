@@ -1,28 +1,27 @@
-const express = require('express');
+const {app} = require('../app');
 const RequestHandler = require('../Handler/RequestHandler');
 const AccessHandler = require('../Handler/AccessHandler');
-const Exception = require('../Util/Exception');
-const app = express();
+const Exception = require('../Util/ExceptionHandler/Exception');
+const UndefinedException = require('../Util/ExceptionHandler/UndefinedException');
 
-app.use(express.json());
-
-const requestHandler = RequestHandler.getInstance();
 const accessHandler = AccessHandler.getInstance();
 
-app.post('/RoomManagement/SetMeeting', accessHandler.isEmployee ,async (req, res) => {
+app.post('/RoomManagement/CreateMeeting', accessHandler.isEmployee ,async (req, res) => {
     try {
         const meetingInfo = req.body;
-        const meetingIdentifier = await requestHandler.setMeeting(meetingInfo, req.id);
+        UndefinedException.allMeetingInfo(meetingInfo);
+        const meetingIdentifier = await RequestHandler.setMeeting(meetingInfo, req.id);
         res.status(201).send("The meeting was successfully created and your meeting identifier is " + meetingIdentifier);
     } catch (err) {
         res.status(Exception.getStatusByExceptionMessage(err)).send(err);
     }
 })
 
-app.post('/RoomManagement/GetFirstAvailableTime', accessHandler.isEmployee, async (req, res) => {
+app.post('/RoomManagement/FirstAvailableTime', accessHandler.isEmployee, async (req, res) => {
     try {
         const meetingInfo = req.body;
-        const firstAvailableTime = await requestHandler.getFirstAvailableTime(meetingInfo);
+        UndefinedException.firstAvailableTime(meetingInfo);
+        const firstAvailableTime = await RequestHandler.getFirstAvailableTime(meetingInfo);
         res.status(202).send(firstAvailableTime);
     } catch (err) {
         res.status(Exception.getStatusByExceptionMessage(err)).send(err);
@@ -33,7 +32,8 @@ app.post('/RoomManagement/GetFirstAvailableTime', accessHandler.isEmployee, asyn
 app.post('/RoomManagement/CancelMeeting', accessHandler.canCancel, async (req, res) => {
     const {meetingIdentifier} = req.body
     try {
-        await requestHandler.cancelMeeting(meetingIdentifier, req.id, req.role);
+        UndefinedException.meetingIdentifier(meetingIdentifier);
+        await RequestHandler.cancelMeeting(meetingIdentifier, req.id, req.role);
         res.status(202).send("The selected meeting was successfully cancelled");
     } catch (err) {
         res.status(Exception.getStatusByExceptionMessage(err)).send(err);
@@ -41,10 +41,10 @@ app.post('/RoomManagement/CancelMeeting', accessHandler.canCancel, async (req, r
     }
 })
 
-app.post('/RoomManagement/EditMeeting', accessHandler.isEmployee, async (req, res) => {
+app.put('/RoomManagement/EditMeeting', accessHandler.isEmployee, async (req, res) => {
     const meetingInfo = req.body;
     try {
-        await requestHandler.editMeeting(meetingInfo, req.id);
+        await RequestHandler.editMeeting(meetingInfo, req.id);
         res.status(202).send("The selected meeting was successfully edited!");
     } catch (err) {
         res.status(Exception.getStatusByExceptionMessage(err)).send(err);
@@ -52,10 +52,11 @@ app.post('/RoomManagement/EditMeeting', accessHandler.isEmployee, async (req, re
     }
 })
 
-app.post('/RoomManagement/GetMeetingInTimeSlot', accessHandler.isAdmin, async (req, res) => {
+app.post('/RoomManagement/MeetingInTimeSlot', accessHandler.isAdmin, async (req, res) => {
     const {startingTime, endingTime} = req.body
     try {
-        const meetingsInTimeSlot = await requestHandler.getMeetingInTimeSlot(startingTime, endingTime)
+        UndefinedException.timeSlot(startingTime, endingTime);
+        const meetingsInTimeSlot = await RequestHandler.getMeetingInTimeSlot(startingTime, endingTime)
         res.status(200).send(meetingsInTimeSlot);
     } catch (err) {
         res.status(Exception.getStatusByExceptionMessage(err)).send(err);
@@ -63,24 +64,24 @@ app.post('/RoomManagement/GetMeetingInTimeSlot', accessHandler.isAdmin, async (r
     }
 })
 
-app.post('/RoomManagement/GetMeetingInRoom',accessHandler.isAdmin, async (req, res) => {
+app.post('/RoomManagement/MeetingsInRoom',accessHandler.isAdmin, async (req, res) => {
     const {roomIdentifier, date} = req.body
     try {
-        const meetingsInRoom = await requestHandler.getMeetingInRoom(roomIdentifier, date)
+        UndefinedException.meetingInRoom(roomIdentifier, date);
+        const meetingsInRoom = await RequestHandler.getMeetingInRoom(roomIdentifier, date)
         res.status(200).send(meetingsInRoom);
     } catch (err) {
         res.status(Exception.getStatusByExceptionMessage(err)).send(err);
     }
 })
 
-app.listen(2000)
 
 
 
 
 
 
-// const requestHandler = RequestHandler.getInstance();
-// const meetingIdentifier = await requestHandler.setMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, req.id);
-// const firstAvailableTime = await requestHandler.getFirstAvailableTime(participants, specificDate, duration, purpose, office, whiteboard, projector)
+// const RequestHandler = RequestHandler.getInstance();
+// const meetingIdentifier = await RequestHandler.setMeeting(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, req.id);
+// const firstAvailableTime = await RequestHandler.getFirstAvailableTime(participants, specificDate, duration, purpose, office, whiteboard, projector)
 // const {meetingIdentifier, title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector} = req.body
