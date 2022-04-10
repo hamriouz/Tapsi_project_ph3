@@ -162,19 +162,10 @@ class Meeting {
 }
 
 async function setMeeting(meetingInfo, id, isBeingEdited) {
-    const {
-        title,
-        descriptions,
-        participants,
-        startingTime,
-        endingTime,
-        purpose,
-        office,
-        whiteboard,
-        projector
-    } = meetingInfo;
+    const {title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector} = meetingInfo;
     let meetingIdentifier;
     let roomIdentifier;
+    //todo
     let allRooms = await roomClient.getAllRoomsInOffice(office);
     let smallRooms = getRoomsWithRequirements(participants, whiteboard, projector, allRooms);
 
@@ -241,6 +232,7 @@ function getRoomsWithRequirements(participants, whiteBoard, projector, allRooms)
 async function getSoonestTime(meetingInfo) {
     let {participants, specificDate, duration, office, projector, whiteboard} = meetingInfo;
 
+    //todo
     let allRooms = await roomClient.getAllRoomsInOffice(office);
     let roomsWithRequirements = getRoomsWithRequirements(participants, whiteboard, projector, allRooms);
     roomsWithRequirements.sort((first, second) => first.capacity - second.capacity);
@@ -313,11 +305,13 @@ async function getMeetingRoomCapacity(meetingIdentifier) {
     let roomCapacity;
     const meeting = Meeting.getMeetingByIdentifier(meetingIdentifier);
     const roomIdentifier = meeting.roomIdentifier;
+    //todo
     roomCapacity = await roomClient.getRoomCapacity(roomIdentifier);
     return roomCapacity;
 }
 
 async function getRoomIdentifier(roomName, office) {
+    //todo
     return await roomClient.getRoomIdentifier(office, roomName);
 }
 

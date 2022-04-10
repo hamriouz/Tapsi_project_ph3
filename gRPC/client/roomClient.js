@@ -35,6 +35,19 @@ class roomClient {
     }
 }
 
+async function roomsInOffice(office){
+    return await roomClient.getAllRoomsInOffice(office);
+}
+
+async function roomIdentifier(office, name){
+    return await roomClient.getRoomIdentifier(office, name);
+}
+
+async function roomCapacity(roomIdentifier){
+    return await roomClient.getRoomCapacity(roomIdentifier);
+}
+
+
 module.exports = roomClient;
 
 /*
