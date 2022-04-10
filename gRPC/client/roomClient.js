@@ -28,6 +28,11 @@ class roomClient {
         client.getRoomIdentifier = Promise.promisify(client.getRoomIdentifier);
         return await client.getRoomIdentifier({"office": office, "name": name});
     }
+
+    static async getAllRoomsInOffice(office){
+        client.getAllRoomsInOffice = Promise.promisify(client.getAllRoomsInOffice);
+        return await client.getAllRoomsInOffice({"office": office})
+    }
 }
 
 module.exports = roomClient;

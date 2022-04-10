@@ -52,21 +52,7 @@ class Meeting {
     static async setNewMeeting(meetingInfo, organizerId, isBeingEdited) {
         try {
             isInParticipantsWorkingHour(meetingInfo.participants, meetingInfo.startingTime, meetingInfo.endingTime)
-            let meetingIdentifier;
-            if (meetingInfo.purpose === MeetingPurpose.INTERVIEW ||
-                meetingInfo.purpose === MeetingPurpose.PDCHAT) {
-                // meetingIdentifier = setMeetingWithFewParticipants(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerId, isBeingEdited)
-                meetingIdentifier = setMeetingWithFewParticipants(meetingInfo, organizerId, isBeingEdited)
-            } else if (meetingInfo.purpose === MeetingPurpose.SPECREVIEW ||
-                meetingInfo.participants.length > 8) {
-                meetingIdentifier = setAMeetingInTehranRoom(meetingInfo, organizerId, isBeingEdited)
-                // meetingIdentifier = setAMeetingInTehranRoom(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerId, isBeingEdited)
-            } else if (meetingInfo.purpose === MeetingPurpose.SPRINTPLANNING ||
-                meetingInfo.purpose === MeetingPurpose.GROOMING) {
-                // meetingIdentifier = setMeetingWithManyParticipants(title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector, organizerId, isBeingEdited)
-                meetingIdentifier = setMeetingWithManyParticipants(meetingInfo, organizerId, isBeingEdited)
-            }
-            return meetingIdentifier;
+            return setMeeting(meetingInfo, organizerId, isBeingEdited);
         } catch (err) {
             throw err
         }
@@ -74,22 +60,7 @@ class Meeting {
 
     static async getSoonestAvailableTime(meetingInfo) {
         try {
-            let soonestAvailableTime;
-            if (meetingInfo.purpose === MeetingPurpose.SPECREVIEW ||
-                meetingInfo.participants.length > 8) {
-                soonestAvailableTime = await getSoonestTimeInBigRooms(meetingInfo);
-                // soonestAvailableTime = await getSoonestTimeInBigRooms(participants, specificDate, duration, purpose, office, whiteboard, projector);
-            } else if (meetingInfo.purpose === MeetingPurpose.PDCHAT ||
-                meetingInfo.purpose === MeetingPurpose.INTERVIEW) {
-                soonestAvailableTime = await getSoonestTimeInSmallRooms(meetingInfo);
-            }
-            // meetingInfo.purpose === MeetingPurpose.INTERVIEW) soonestAvailableTime = await getSoonestTimeInSmallRooms(participants, specificDate, duration, purpose, office, whiteboard, projector);
-            else if (meetingInfo.purpose === MeetingPurpose.GROOMING ||
-                meetingInfo.purpose === MeetingPurpose.SPRINTPLANNING) {
-                soonestAvailableTime = await getSoonestTimeInMediumRooms(meetingInfo);
-            }
-            // meetingInfo.purpose === MeetingPurpose.SPRINTPLANNING) soonestAvailableTime = await getSoonestTimeInMediumRooms(participants, specificDate, duration, purpose, office, whiteboard, projector);
-            return soonestAvailableTime;
+             return await getSoonestTime(meetingInfo);
         } catch (err) {
             throw err
         }
@@ -107,7 +78,18 @@ class Meeting {
     }
 
     async editAMeeting(meetingInfo, requestSenderId) {
-        let {meetingIdentifier, title, descriptions, newParticipants, startingTime, endingTime, purpose, office, whiteboard, projector} = meetingInfo;
+        let {
+            meetingIdentifier,
+            title,
+            descriptions,
+            newParticipants,
+            startingTime,
+            endingTime,
+            purpose,
+            office,
+            whiteboard,
+            projector
+        } = meetingInfo;
 
         if (requestSenderId !== this.organizerId)
             throw "only the meeting organizer can edit a meeting"
@@ -179,36 +161,31 @@ class Meeting {
     }
 }
 
-//todo
-async function setMeetingWithFewParticipants(meetingInfo, id, isBeingEdited) {
-    const {title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector} = meetingInfo;
+async function setMeeting(meetingInfo, id, isBeingEdited) {
+    const {
+        title,
+        descriptions,
+        participants,
+        startingTime,
+        endingTime,
+        purpose,
+        office,
+        whiteboard,
+        projector
+    } = meetingInfo;
     let meetingIdentifier;
     let roomIdentifier;
+    let allRooms = await roomClient.getAllRoomsInOffice(office);
+    let smallRooms = getRoomsWithRequirements(participants, whiteboard, projector, allRooms);
 
-    if (participants.length === 3) {
-        let isBabolFree = isWantedRoomFree("Babol", office, startingTime, endingTime);
-        let isAhvazFree = isWantedRoomFree("Ahvaz", office, startingTime, endingTime);
-        let isIsfahanFree = isWantedRoomFree("Isfahan", office, startingTime, endingTime);
-        let isRashtFree = isWantedRoomFree("Rasht", office, startingTime, endingTime);
-        let isKarajFree = isWantedRoomFree("Karaj", office, startingTime, endingTime);
-
-        if (isBabolFree)
-            roomIdentifier = await getRoomIdentifier("Babol", office);
-        else if (isAhvazFree)
-            roomIdentifier = await getRoomIdentifier("Ahvaz", office);
-        else if (isIsfahanFree)
-            roomIdentifier = await getRoomIdentifier("Isfahan", office);
-        else if (isRashtFree)
-            roomIdentifier = await getRoomIdentifier("Rasht", office);
-        else if (isKarajFree)
-            roomIdentifier = await getRoomIdentifier("Karaj", office);
-
-    } else if (participants.length === 4) {
-        let isKarajFree = isWantedRoomFree("Karaj", office, startingTime, endingTime);
-        if (isKarajFree)
-            roomIdentifier = await getRoomIdentifier("Karaj", office);
+    smallRooms.sort((first, second) => first.capacity - second.capacity);
+    for (let i = 0; i < smallRooms.length; i++) {
+        let isRoomFree = isWantedRoomFree(smallRooms[i].name, office, startingTime, endingTime)
+        if (isRoomFree) {
+            roomIdentifier = await getRoomIdentifier(smallRooms[i].name, office);
+            break;
+        }
     }
-
     if (roomIdentifier) {
         let meeting = new Meeting(meetingInfo, id);
         await dataAccess.createNewMeeting(meetingInfo, id)
@@ -221,155 +198,78 @@ async function setMeetingWithFewParticipants(meetingInfo, id, isBeingEdited) {
     }
 }
 
-//todo
-async function setMeetingWithManyParticipants(meetingInfo, id, isBeingEdited) {
-    const {title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector} = meetingInfo;
-    let meetingIdentifier;
-    let roomIdentifier;
+function getRoomsWithRequirements(participants, whiteBoard, projector, allRooms) {
+    let possibleRooms = [];
+    if (whiteBoard === true) {
+        for (let i = 0; i < allRooms.length; i++) {
+            if (allRooms.whiteboard === true)
+                possibleRooms.push(allRooms[i])
+        }
+    } else possibleRooms = allRooms;
+    let roomsWithAllRequirements = [];
+    if (projector === true) {
+        possibleRooms.forEach(room => {
+            if (room.projector === true)
+                roomsWithAllRequirements.push(room);
+        })
+    } else roomsWithAllRequirements = possibleRooms;
 
-    if (participants.length === 4) {
-        let isBabolFree = isWantedRoomFree("Babol", office, startingTime, endingTime);
-        let isShirazFree = isWantedRoomFree("Shiraz", office, startingTime, endingTime);
-        let isMashhadFree = isWantedRoomFree("Mashhad", office, startingTime, endingTime);
+    let finalRooms = [];
 
-        if (isBabolFree)
-            roomIdentifier = await getRoomIdentifier("Babol", office);
-        else if (isShirazFree)
-            roomIdentifier = await getRoomIdentifier("Shiraz", office);
-        else if (isMashhadFree)
-            roomIdentifier = await getRoomIdentifier("Mashhad", office);
-
-    } else if (participants.length === 5 || participants.length === 6) {
-        let isShirazFree = isWantedRoomFree("Shiraz", office, startingTime, endingTime);
-        let isMashhadFree = isWantedRoomFree("Mashhad", office, startingTime, endingTime);
-
-        if (isShirazFree)
-            roomIdentifier = await getRoomIdentifier("Shiraz", office);
-        else if (isMashhadFree)
-            roomIdentifier = await getRoomIdentifier("Mashhad", office);
-
-    } else if (participants.length > 6 && participants.length < 9) {
-        let isMashhadFree = isWantedRoomFree("Mashhad", office, startingTime, endingTime);
-        if (isMashhadFree)
-            roomIdentifier = await getRoomIdentifier("Mashhad", office);
+    if (participants.length < 5) {
+        roomsWithAllRequirements.forEach(room => {
+            if (room.capacity <= 5 &&
+                participants.length <= room.capacity)
+                finalRooms.push(room);
+        })
+    } else if (participants.length > 4 && participants.length < 9) {
+        roomsWithAllRequirements.forEach(room => {
+            if (room.capacity >= 5 && room.capacity <= 9 &&
+                participants.length <= room.capacity)
+                finalRooms.push(room);
+        })
+    } else if (participants.length > 8) {
+        roomsWithAllRequirements.forEach(room => {
+            if (room.capacity > 8 &&
+                participants.length <= room.capacity)
+                finalRooms.push(room);
+        })
     }
-
-    if (roomIdentifier) {
-        let meeting = new Meeting(meetingInfo, id);
-        await dataAccess.createNewMeeting(meetingInfo, id)
-        meetingIdentifier = await meeting.getMeetingID();
-        return meetingIdentifier;
-    } else {
-        if (isBeingEdited)
-            throw 'unable to edit the chosen attribute'
-        else throw 'no room found in the given period of time for the wanted office'
-    }
-
+    return finalRooms;
 }
 
-//todo
-async function setAMeetingInTehranRoom(meetingInfo, id, isBeingEdited) {
-    const {startingTime, endingTime, office} = meetingInfo;
-    let meetingIdentifier;
-    let roomIdentifier;
+async function getSoonestTime(meetingInfo) {
+    let {participants, specificDate, duration, office, projector, whiteboard} = meetingInfo;
 
-    let isTehranFree = isWantedRoomFree("Tehran", office, startingTime, endingTime);
-    if (isTehranFree)
-        roomIdentifier = await getRoomIdentifier("Tehran", office);
+    let allRooms = await roomClient.getAllRoomsInOffice(office);
+    let roomsWithRequirements = getRoomsWithRequirements(participants, whiteboard, projector, allRooms);
+    roomsWithRequirements.sort((first, second) => first.capacity - second.capacity);
 
-    if (roomIdentifier) {
-        let meeting = new Meeting(meetingInfo, id);
-        await dataAccess.createNewMeeting(meetingInfo, id)
-        meetingIdentifier = await meeting.getMeetingID();
-        return meetingIdentifier;
-    } else {
-        if (isBeingEdited)
-            throw 'unable to edit the chosen attribute'
-        else throw 'no room found in the given period of time for the wanted office'
-    }
-}
-
-//todo
-async function getSoonestTimeInSmallRooms(meetingInfo) {
-    let {participants, specificDate, duration, office, projector} = meetingInfo;
-    if (projector === true)
-        throw 'there are no small rooms with the projector feature'
     if (!specificDate) {
         const d = new Date();
         specificDate = d.getTime();
     }
-    let endingSpecificTime = specificDate + duration
-    while (true) {
-        let isBabolFree = await isWantedRoomFree("Babol", office, specificDate, endingSpecificTime);
-        let isAhvazFree = await isWantedRoomFree("Ahvaz", office, specificDate, endingSpecificTime);
-        let isIsfahanFree = await isWantedRoomFree("Isfahan", office, specificDate, endingSpecificTime);
-        let isRashtFree = await isWantedRoomFree("Rasht", office, specificDate, endingSpecificTime);
-        let isQomFree = await isWantedRoomFree("Qom", office, specificDate, endingSpecificTime);
-        let isKarajFree = await isWantedRoomFree("Karaj", office, specificDate, endingSpecificTime);
 
-        if (participants.length > 3) {
-            if (isKarajFree)
-                return specificDate;
-        } else if (isBabolFree || isAhvazFree || isIsfahanFree || isRashtFree || isQomFree || isKarajFree) return specificDate;
-        else {
+    let endingSpecificTime = specificDate + duration
+    let isDateOK = false;
+    while (true) {
+        roomsWithRequirements.forEach(room =>{
+            if (isWantedRoomFree(room.name, office, specificDate, endingSpecificTime)){
+                isDateOK = true;
+                break;
+            }
+        })
+        if (isDateOK) {
+            return specificDate;
+        } else {
             specificDate += (15 * 1000 * 60);
             endingSpecificTime += (15 * 1000 * 60);
         }
     }
 }
 
-//todo
-async function getSoonestTimeInMediumRooms(meetingInfo) {
-    let {participants, specificDate, duration, purpose, office, whiteboard, projector} = meetingInfo
-    if (!specificDate) {
-        const d = new Date();
-        specificDate = d.getTime();
-    }
-    let numberOfParticipants = participants.length;
-    let endSpecificDate = specificDate + duration;
-    while (true) {
-        let isKarajFree = await isWantedRoomFree("Karaj", office, specificDate, endSpecificDate);
-        let isShirazFree = await isWantedRoomFree("Shiraz", office, specificDate, endSpecificDate);
-        let isMashhadFree = await isWantedRoomFree("Mashhad", office, specificDate, endSpecificDate);
-        switch (numberOfParticipants) {
-            case 4:
-                if (isKarajFree)
-                    return specificDate;
-            case 5:
-            case 6:
-            case 7:
-                if (isShirazFree)
-                    return specificDate;
-            case 8:
-                if (isMashhadFree)
-                    return specificDate;
-                break;
-        }
-        specificDate += (15 * 1000 * 60);
-        endSpecificDate += (15 * 1000 * 60);
-    }
-}
-
-//todo
-async function getSoonestTimeInBigRooms(meetingInfo) {
-    let {participants, specificDate, duration, purpose, office, whiteboard, projector} = meetingInfo;
-    if (!specificDate) {
-        const d = new Date();
-        specificDate = d.getTime();
-    }
-    let endSpecificDate = specificDate + duration;
-    while (true) {
-        let isTehranFree = await isWantedRoomFree("Tehran", office, specificDate, endSpecificDate);
-        if (isTehranFree) return specificDate;
-        else {
-            specificDate += (15 * 1000 * 60);
-            endSpecificDate += (15 * 1000 * 60);
-        }
-    }
-}
-
 async function editTime(meetingIdentifier, startingTime, endingTime) {
-    try{
+    try {
         const meeting = Meeting.getMeetingByIdentifier(meetingIdentifier);
         await cancelChosenMeeting(meetingIdentifier);
         if (!startingTime)
@@ -378,7 +278,7 @@ async function editTime(meetingIdentifier, startingTime, endingTime) {
             endingTime = meeting.end;
         let newData = changeTime(meeting, startingTime, endingTime);
         await Meeting.setNewMeeting(newData, meeting.organizer, true);
-    }catch (err){
+    } catch (err) {
         throw err;
     }
 
@@ -484,9 +384,6 @@ function changeParticipants(meeting, participants) {
 module.exports = Meeting
 
 
-
-
-
 /*
 function set2(participants, startingTime, endingTime, purpose, office, whiteboard, projector) {
     let roomIdentifier;
@@ -517,4 +414,199 @@ function set2(participants, startingTime, endingTime, purpose, office, whiteboar
 // async static getSoonestAvailableTime(participants, specificDate, duration, purpose, office, whiteboard, projector) {
 // async editAMeeting(meetingIdentifier, title, descriptions, newParticipants, startingTime, endingTime, purpose, office, whiteboard, projector, requestSenderId) {
 //toye set meeting ha reorganize
+
+
+//todo
+/!*
+
+//  todo
+// async function setMeeting(meetingInfo, id, isBeingEdited) {
+//     const {title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector} = meetingInfo;
+//     let meetingIdentifier;
+//     let roomIdentifier;
+//
+//     if (participants.length === 3) {
+//         let isBabolFree = isWantedRoomFree("Babol", office, startingTime, endingTime);
+//         let isAhvazFree = isWantedRoomFree("Ahvaz", office, startingTime, endingTime);
+//         let isIsfahanFree = isWantedRoomFree("Isfahan", office, startingTime, endingTime);
+//         let isRashtFree = isWantedRoomFree("Rasht", office, startingTime, endingTime);
+//         let isKarajFree = isWantedRoomFree("Karaj", office, startingTime, endingTime);
+//
+//         if (isBabolFree)
+//             roomIdentifier = await getRoomIdentifier("Babol", office);
+//         else if (isAhvazFree)
+//             roomIdentifier = await getRoomIdentifier("Ahvaz", office);
+//         else if (isIsfahanFree)
+//             roomIdentifier = await getRoomIdentifier("Isfahan", office);
+//         else if (isRashtFree)
+//             roomIdentifier = await getRoomIdentifier("Rasht", office);
+//         else if (isKarajFree)
+//             roomIdentifier = await getRoomIdentifier("Karaj", office);
+//
+//     } else if (participants.length === 4) {
+//         let isKarajFree = isWantedRoomFree("Karaj", office, startingTime, endingTime);
+//         if (isKarajFree)
+//             roomIdentifier = await getRoomIdentifier("Karaj", office);
+//     }
+//
+//     if (roomIdentifier) {
+//         let meeting = new Meeting(meetingInfo, id);
+//         await dataAccess.createNewMeeting(meetingInfo, id)
+//         meetingIdentifier = await meeting.getMeetingID();
+//         return meetingIdentifier;
+//     } else {
+//         if (isBeingEdited)
+//             throw 'unable to edit the chosen attribute'
+//         else throw 'no room found in the given period of time for the wanted office'
+//     }
+// }
+
+
+async function setMeetingWithManyParticipants(meetingInfo, id, isBeingEdited) {
+    const {
+        title,
+        descriptions,
+        participants,
+        startingTime,
+        endingTime,
+        purpose,
+        office,
+        whiteboard,
+        projector
+    } = meetingInfo;
+    let meetingIdentifier;
+    let roomIdentifier;
+
+    if (participants.length === 4) {
+        let isBabolFree = isWantedRoomFree("Babol", office, startingTime, endingTime);
+        let isShirazFree = isWantedRoomFree("Shiraz", office, startingTime, endingTime);
+        let isMashhadFree = isWantedRoomFree("Mashhad", office, startingTime, endingTime);
+
+        if (isBabolFree)
+            roomIdentifier = await getRoomIdentifier("Babol", office);
+        else if (isShirazFree)
+            roomIdentifier = await getRoomIdentifier("Shiraz", office);
+        else if (isMashhadFree)
+            roomIdentifier = await getRoomIdentifier("Mashhad", office);
+
+    } else if (participants.length === 5 || participants.length === 6) {
+        let isShirazFree = isWantedRoomFree("Shiraz", office, startingTime, endingTime);
+        let isMashhadFree = isWantedRoomFree("Mashhad", office, startingTime, endingTime);
+
+        if (isShirazFree)
+            roomIdentifier = await getRoomIdentifier("Shiraz", office);
+        else if (isMashhadFree)
+            roomIdentifier = await getRoomIdentifier("Mashhad", office);
+
+    } else if (participants.length > 6 && participants.length < 9) {
+        let isMashhadFree = isWantedRoomFree("Mashhad", office, startingTime, endingTime);
+        if (isMashhadFree)
+            roomIdentifier = await getRoomIdentifier("Mashhad", office);
+    }
+
+    if (roomIdentifier) {
+        let meeting = new Meeting(meetingInfo, id);
+        await dataAccess.createNewMeeting(meetingInfo, id)
+        meetingIdentifier = await meeting.getMeetingID();
+        return meetingIdentifier;
+    } else {
+        if (isBeingEdited)
+            throw 'unable to edit the chosen attribute'
+        else throw 'no room found in the given period of time for the wanted office'
+    }
+
+}
+
+//todo
+async function setAMeetingInTehranRoom(meetingInfo, id, isBeingEdited) {
+    const {startingTime, endingTime, office} = meetingInfo;
+    let meetingIdentifier;
+    let roomIdentifier;
+
+    let isTehranFree = isWantedRoomFree("Tehran", office, startingTime, endingTime);
+    if (isTehranFree)
+        roomIdentifier = await getRoomIdentifier("Tehran", office);
+
+    if (roomIdentifier) {
+        let meeting = new Meeting(meetingInfo, id);
+        await dataAccess.createNewMeeting(meetingInfo, id)
+        meetingIdentifier = await meeting.getMeetingID();
+        return meetingIdentifier;
+    } else {
+        if (isBeingEdited)
+            throw 'unable to edit the chosen attribute'
+        else throw 'no room found in the given period of time for the wanted office'
+    }
+}
+*!/
+
+
+/!*
+//todo
+async function getSoonestTimeInMediumRooms(meetingInfo) {
+    let {participants, specificDate, duration, purpose, office, whiteboard, projector} = meetingInfo
+    if (!specificDate) {
+        const d = new Date();
+        specificDate = d.getTime();
+    }
+    let numberOfParticipants = participants.length;
+    let endSpecificDate = specificDate + duration;
+    while (true) {
+        let isKarajFree = await isWantedRoomFree("Karaj", office, specificDate, endSpecificDate);
+        let isShirazFree = await isWantedRoomFree("Shiraz", office, specificDate, endSpecificDate);
+        let isMashhadFree = await isWantedRoomFree("Mashhad", office, specificDate, endSpecificDate);
+        switch (numberOfParticipants) {
+            case 4:
+                if (isKarajFree)
+                    return specificDate;
+            case 5:
+            case 6:
+            case 7:
+                if (isShirazFree)
+                    return specificDate;
+            case 8:
+                if (isMashhadFree)
+                    return specificDate;
+                break;
+        }
+        specificDate += (15 * 1000 * 60);
+        endSpecificDate += (15 * 1000 * 60);
+    }
+}
+
+//todo
+async function getSoonestTimeInBigRooms(meetingInfo) {
+    let {participants, specificDate, duration, purpose, office, whiteboard, projector} = meetingInfo;
+    if (!specificDate) {
+        const d = new Date();
+        specificDate = d.getTime();
+    }
+    let endSpecificDate = specificDate + duration;
+    while (true) {
+        let isTehranFree = await isWantedRoomFree("Tehran", office, specificDate, endSpecificDate);
+        if (isTehranFree) return specificDate;
+        else {
+            specificDate += (15 * 1000 * 60);
+            endSpecificDate += (15 * 1000 * 60);
+        }
+    }
+}
+*!/
+
+
+/!*if (meetingInfo.purpose === MeetingPurpose.SPECREVIEW ||
+                meetingInfo.participants.length > 8) {
+                soonestAvailableTime = await getSoonestTimeInBigRooms(meetingInfo);
+                // soonestAvailableTime = await getSoonestTimeInBigRooms(participants, specificDate, duration, purpose, office, whiteboard, projector);
+            } else if (meetingInfo.purpose === MeetingPurpose.PDCHAT ||
+                meetingInfo.purpose === MeetingPurpose.INTERVIEW) {
+                soonestAvailableTime = await getSoonestTime(meetingInfo);
+            }
+            // meetingInfo.purpose === MeetingPurpose.INTERVIEW) soonestAvailableTime = await getSoonestTime(participants, specificDate, duration, purpose, office, whiteboard, projector);
+            else if (meetingInfo.purpose === MeetingPurpose.GROOMING ||
+                meetingInfo.purpose === MeetingPurpose.SPRINTPLANNING) {
+                soonestAvailableTime = await getSoonestTimeInMediumRooms(meetingInfo);
+            }*!/
+// meetingInfo.purpose === MeetingPurpose.SPRINTPLANNING) soonestAvailableTime = await getSoonestTimeInMediumRooms(participants, specificDate, duration, purpose, office, whiteboard, projector);
+
 */

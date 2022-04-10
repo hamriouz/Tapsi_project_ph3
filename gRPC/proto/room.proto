@@ -5,6 +5,7 @@ package room;
 service Room {
   rpc getRoomIdentifier (RoomIdentifierRequest) returns (RoomIdentifierResponse) {}
   rpc getRoomCapacity (RoomCapacityRequest) returns (RoomCapacityResponse) {}
+  rpc getAllRoomsInOffice (OfficeName) returns (RoomsInOffice){}
 }
 
 message RoomIdentifierRequest{
@@ -24,4 +25,18 @@ message RoomCapacityResponse{
   int32 capacity = 1;
 }
 
+message OfficeName{
+  string officeName = 1;
+}
 
+message RoomsInOffice{
+  repeated AllRoomsInOffice rooms = 1;
+}
+
+message AllRoomsInOffice{
+  string name = 1;
+  string capacity = 2;
+  string office = 3;
+  bool whiteboard = 4;
+  bool projector = 5;
+}
