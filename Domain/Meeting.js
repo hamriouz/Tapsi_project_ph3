@@ -11,8 +11,6 @@ const {
     getListAllMeetingInTimeSlot
 } = require("../DataAccess/DataBaseManager/script");
 
-const dataAccess = DataAccess.getInstance();
-
 class Meeting {
     constructor(meetingInfo, organizerId) {
         const {
@@ -42,7 +40,7 @@ class Meeting {
 
     static async getMeetingByIdentifier(meetingIdentifier) {
         try {
-            const meetingData = await dataAccess.getMeetingByIdentifier(meetingIdentifier)
+            const meetingData = await DataAccess.getMeetingByIdentifier(meetingIdentifier)
             return new Meeting(meetingData, meetingData.organizerId)
         } catch (err) {
             throw err;
@@ -60,7 +58,7 @@ class Meeting {
 
     static async getSoonestAvailableTime(meetingInfo) {
         try {
-             return await getSoonestTime(meetingInfo);
+            return await getSoonestTime(meetingInfo);
         } catch (err) {
             throw err
         }
@@ -69,7 +67,7 @@ class Meeting {
     async cancelAMeeting(meetingIdentifier, organizerId, role) {
         try {
             if (this.organizerId === organizerId || role === "admin")
-                await dataAccess.cancelChosenMeeting(meetingIdentifier);
+                await DataAccess.cancelChosenMeeting(meetingIdentifier);
             else throw "only the meeting organizer or an admin can cancel a meeting";
 
         } catch (err) {
@@ -96,11 +94,11 @@ class Meeting {
         try {
             if (title) {
                 this.title = title;
-                await dataAccess.changeTitle(meetingIdentifier, meetingInfo.title)
+                await DataAccess.changeTitle(meetingIdentifier, meetingInfo.title)
             }
             if (descriptions) {
                 this.description = descriptions;
-                await dataAccess.changeDescription(meetingIdentifier, descriptions);
+                await DataAccess.changeDescription(meetingIdentifier, descriptions);
             }
             if (newParticipants) {
                 isInParticipantsWorkingHour(newParticipants, this.startingTime, this.endingTime);
@@ -120,11 +118,11 @@ class Meeting {
                     this.endingTime = endingTime;
             }
             if (purpose) {
-                await dataAccess.changePurpose(meetingIdentifier, purpose);
+                await DataAccess.changePurpose(meetingIdentifier, purpose);
                 this.purpose = purpose;
             }
             if (whiteboard !== undefined) {
-                await dataAccess.changeWhiteBoard(meetingIdentifier, whiteboard);
+                await DataAccess.changeWhiteBoard(meetingIdentifier, whiteboard);
             }
             if (projector !== undefined) {
                 await editProjector(meetingIdentifier, projector);
@@ -146,7 +144,7 @@ class Meeting {
 
     static async getMeetingInATimeSlot(startingTime, endingTime) {
         try {
-            return await dataAccess.meetingsInTimeSlot(startingTime, endingTime)
+            return await DataAccess.meetingsInTimeSlot(startingTime, endingTime)
         } catch (err) {
             throw err
         }
@@ -154,7 +152,7 @@ class Meeting {
 
     static async getMeetingInARoom(roomIdentifier, date) {
         try {
-            return await dataAccess.meetingsInRoom(roomIdentifier, date)
+            return await DataAccess.meetingsInRoom(roomIdentifier, date)
         } catch (err) {
             throw err
         }
@@ -162,7 +160,17 @@ class Meeting {
 }
 
 async function setMeeting(meetingInfo, id, isBeingEdited) {
-    const {title, descriptions, participants, startingTime, endingTime, purpose, office, whiteboard, projector} = meetingInfo;
+    const {
+        title,
+        descriptions,
+        participants,
+        startingTime,
+        endingTime,
+        purpose,
+        office,
+        whiteboard,
+        projector
+    } = meetingInfo;
     let meetingIdentifier;
     let roomIdentifier;
     //todo
@@ -179,7 +187,7 @@ async function setMeeting(meetingInfo, id, isBeingEdited) {
     }
     if (roomIdentifier) {
         let meeting = new Meeting(meetingInfo, id);
-        await dataAccess.createNewMeeting(meetingInfo, id)
+        await DataAccess.createNewMeeting(meetingInfo, id)
         meetingIdentifier = await meeting.getMeetingID();
         return meetingIdentifier;
     } else {
@@ -187,6 +195,92 @@ async function setMeeting(meetingInfo, id, isBeingEdited) {
             throw 'unable to edit the chosen attribute'
         else throw 'no room found in the given period of time for the wanted office'
     }
+}
+
+async function getSoonestTime(meetingInfo) {
+    let {participants, specificDate, duration, office, projector, whiteboard} = meetingInfo;
+
+    //todo
+    let allRooms = await roomClient.getAllRoomsInOffice(office);
+    let roomsWithRequirements = getRoomsWithRequirements(participants, whiteboard, projector, allRooms);
+    roomsWithRequirements.sort((first, second) => first.capacity - second.capacity);
+
+    if (!specificDate) {
+        const d = new Date();
+        specificDate = d.getTime();
+    }
+
+    let endingSpecificTime = specificDate + duration
+    let isDateOK = false;
+    while (true) {
+        roomsWithRequirements.forEach(room => {
+            if (isWantedRoomFree(room.name, office, specificDate, endingSpecificTime)) {
+                isDateOK = true;
+                break;
+            }
+        })
+        if (isDateOK) {
+            return specificDate;
+        } else {
+            specificDate += (15 * 1000 * 60);
+            endingSpecificTime += (15 * 1000 * 60);
+        }
+    }
+}
+
+async function editTime(meetingIdentifier, startingTime, endingTime) {
+    try {
+        const meeting = Meeting.getMeetingByIdentifier(meetingIdentifier);
+        await cancelChosenMeeting(meetingIdentifier);
+        if (!startingTime)
+            startingTime = meeting.start;
+        if (!endingTime)
+            endingTime = meeting.end;
+        let newData = changeTime(meeting, startingTime, endingTime);
+        await Meeting.setNewMeeting(newData, meeting.organizer, true);
+    } catch (err) {
+        throw err;
+    }
+
+}
+
+async function editParticipants(meetingIdentifier, oldParticipant, newParticipants) {
+    const meeting = Meeting.getMeetingByIdentifier(meetingIdentifier);
+    const meetingCapacity = await getMeetingRoomCapacity(meeting.roomIdentifier);
+    if (oldParticipant.length === newParticipants.length ||
+        newParticipants.length <= meetingCapacity)
+        await DataAccess.changeParticipants(meetingIdentifier, newParticipants)
+    else {
+        try {
+            await cancelChosenMeeting(meetingIdentifier);
+            let newData = changeParticipants(meeting, newParticipants);
+            await Meeting.setNewMeeting(newData, meeting.organizer, true);
+        } catch (err) {
+
+            throw err;
+        }
+    }
+}
+
+async function editProjector(meetingIdentifier, projector) {
+    const meeting = Meeting.getMeetingByIdentifier(meetingIdentifier);
+    if (meeting.participants.length === 3)
+        throw 'unable to edit the chosen attribute'
+    else await changeProjector(meetingIdentifier, projector);
+}
+
+async function getMeetingRoomCapacity(meetingIdentifier) {
+    let roomCapacity;
+    const meeting = Meeting.getMeetingByIdentifier(meetingIdentifier);
+    const roomIdentifier = meeting.roomIdentifier;
+    //todo
+    roomCapacity = await roomClient.getRoomCapacity(roomIdentifier);
+    return roomCapacity;
+}
+
+async function getRoomIdentifier(roomName, office) {
+    //todo
+    return await roomClient.getRoomIdentifier(office, roomName);
 }
 
 function getRoomsWithRequirements(participants, whiteBoard, projector, allRooms) {
@@ -227,92 +321,6 @@ function getRoomsWithRequirements(participants, whiteBoard, projector, allRooms)
         })
     }
     return finalRooms;
-}
-
-async function getSoonestTime(meetingInfo) {
-    let {participants, specificDate, duration, office, projector, whiteboard} = meetingInfo;
-
-    //todo
-    let allRooms = await roomClient.getAllRoomsInOffice(office);
-    let roomsWithRequirements = getRoomsWithRequirements(participants, whiteboard, projector, allRooms);
-    roomsWithRequirements.sort((first, second) => first.capacity - second.capacity);
-
-    if (!specificDate) {
-        const d = new Date();
-        specificDate = d.getTime();
-    }
-
-    let endingSpecificTime = specificDate + duration
-    let isDateOK = false;
-    while (true) {
-        roomsWithRequirements.forEach(room =>{
-            if (isWantedRoomFree(room.name, office, specificDate, endingSpecificTime)){
-                isDateOK = true;
-                break;
-            }
-        })
-        if (isDateOK) {
-            return specificDate;
-        } else {
-            specificDate += (15 * 1000 * 60);
-            endingSpecificTime += (15 * 1000 * 60);
-        }
-    }
-}
-
-async function editTime(meetingIdentifier, startingTime, endingTime) {
-    try {
-        const meeting = Meeting.getMeetingByIdentifier(meetingIdentifier);
-        await cancelChosenMeeting(meetingIdentifier);
-        if (!startingTime)
-            startingTime = meeting.start;
-        if (!endingTime)
-            endingTime = meeting.end;
-        let newData = changeTime(meeting, startingTime, endingTime);
-        await Meeting.setNewMeeting(newData, meeting.organizer, true);
-    } catch (err) {
-        throw err;
-    }
-
-}
-
-async function editParticipants(meetingIdentifier, oldParticipant, newParticipants) {
-    const meeting = Meeting.getMeetingByIdentifier(meetingIdentifier);
-    const meetingCapacity = await getMeetingRoomCapacity(meeting.roomIdentifier);
-    if (oldParticipant.length === newParticipants.length ||
-        newParticipants.length <= meetingCapacity)
-        await dataAccess.changeParticipants(meetingIdentifier, newParticipants)
-    else {
-        try {
-            await cancelChosenMeeting(meetingIdentifier);
-            let newData = changeParticipants(meeting, newParticipants);
-            await Meeting.setNewMeeting(newData, meeting.organizer, true);
-        } catch (err) {
-
-            throw err;
-        }
-    }
-}
-
-async function editProjector(meetingIdentifier, projector) {
-    const meeting = Meeting.getMeetingByIdentifier(meetingIdentifier);
-    if (meeting.participants.length === 3)
-        throw 'unable to edit the chosen attribute'
-    else await changeProjector(meetingIdentifier, projector);
-}
-
-async function getMeetingRoomCapacity(meetingIdentifier) {
-    let roomCapacity;
-    const meeting = Meeting.getMeetingByIdentifier(meetingIdentifier);
-    const roomIdentifier = meeting.roomIdentifier;
-    //todo
-    roomCapacity = await roomClient.getRoomCapacity(roomIdentifier);
-    return roomCapacity;
-}
-
-async function getRoomIdentifier(roomName, office) {
-    //todo
-    return await roomClient.getRoomIdentifier(office, roomName);
 }
 
 function isInParticipantsWorkingHour(participants, startingTime, endingTime) {
@@ -445,7 +453,7 @@ function set2(participants, startingTime, endingTime, purpose, office, whiteboar
 //
 //     if (roomIdentifier) {
 //         let meeting = new Meeting(meetingInfo, id);
-//         await dataAccess.createNewMeeting(meetingInfo, id)
+//         await DataAccess.createNewMeeting(meetingInfo, id)
 //         meetingIdentifier = await meeting.getMeetingID();
 //         return meetingIdentifier;
 //     } else {
@@ -500,7 +508,7 @@ async function setMeetingWithManyParticipants(meetingInfo, id, isBeingEdited) {
 
     if (roomIdentifier) {
         let meeting = new Meeting(meetingInfo, id);
-        await dataAccess.createNewMeeting(meetingInfo, id)
+        await DataAccess.createNewMeeting(meetingInfo, id)
         meetingIdentifier = await meeting.getMeetingID();
         return meetingIdentifier;
     } else {
@@ -523,7 +531,7 @@ async function setAMeetingInTehranRoom(meetingInfo, id, isBeingEdited) {
 
     if (roomIdentifier) {
         let meeting = new Meeting(meetingInfo, id);
-        await dataAccess.createNewMeeting(meetingInfo, id)
+        await DataAccess.createNewMeeting(meetingInfo, id)
         meetingIdentifier = await meeting.getMeetingID();
         return meetingIdentifier;
     } else {

@@ -49,7 +49,7 @@ async function removeCancellation(meetingIdentifier) {
     meeting.save();
 }
 
-async function changeTitle(meetingIdentifier, newTitle) {
+async function updateTitle(meetingIdentifier, newTitle) {
     await connectToDataBase();
     const meeting = await Meeting.findById(meetingIdentifier);
     meeting.title = newTitle;
@@ -57,35 +57,35 @@ async function changeTitle(meetingIdentifier, newTitle) {
 
 }
 
-async function changeDescription(meetingIdentifier, newDescription) {
+async function updateDescription(meetingIdentifier, newDescription) {
     await connectToDataBase();
     const meeting = await Meeting.findById(meetingIdentifier);
     meeting.description = newDescription;
     meeting.save();
 }
 
-async function changeParticipants(meetingIdentifier, newParticipants) {
+async function updateParticipants(meetingIdentifier, newParticipants) {
     await connectToDataBase();
     const meeting = await Meeting.findById(meetingIdentifier);
     meeting.participants = newParticipants;
     meeting.save();
 }
 
-async function changePurpose(meetingIdentifier, newPurpose) {
+async function updatePurpose(meetingIdentifier, newPurpose) {
     await connectToDataBase();
     const meeting = await Meeting.findById(meetingIdentifier);
     meeting.purpose = newPurpose;
     meeting.save();
 }
 
-async function changeWhiteBoard(meetingIdentifier, newBoard) {
+async function updateWhiteBoard(meetingIdentifier, newBoard) {
     await connectToDataBase();
     const meeting = await Meeting.findById(meetingIdentifier);
     meeting.whiteboard = newBoard;
     meeting.save();
 }
 
-async function changeProjector(meetingIdentifier, newProjector) {
+async function updateProjector(meetingIdentifier, newProjector) {
     await connectToDataBase();
     const meeting = await Meeting.findById(meetingIdentifier);
     meeting.projector = newProjector;
@@ -125,13 +125,13 @@ async function getID(startingTime, endingTime, office, roomIdentifier){
 
 module.exports = {
     isWantedRoomFree,
-    changeTitle,
-    changeDescription,
-    changeParticipants,
+    changeTitle: updateTitle,
+    changeDescription: updateDescription,
+    changeParticipants: updateParticipants,
     getID,
-    changePurpose,
-    changeWhiteBoard,
-    changeProjector,
+    changePurpose: updatePurpose,
+    changeWhiteBoard: updateWhiteBoard,
+    changeProjector: updateProjector,
     getMeetingById,
     createMeeting,
     cancelChosenMeeting,

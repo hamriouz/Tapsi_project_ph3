@@ -13,7 +13,7 @@ const {
 
 class DataAccess {
 
-    async createNewMeeting(meetingInfo, organizerId) {
+    static async createNewMeeting(meetingInfo, organizerId) {
         try {
             await createMeeting(meetingInfo, organizerId)
         } catch (err) {
@@ -21,14 +21,14 @@ class DataAccess {
         }
     }
 
-    async getMeetingByIdentifier(meetingIdentifier) {
+    static async getMeetingByIdentifier(meetingIdentifier) {
         const meeting = await getMeetingById(meetingIdentifier);
         if (meeting)
             return meeting[0];
         else throw 'No meeting has been set with the given identifier'
     }
 
-    async cancelChosenMeeting(meetingIdentifier) {
+    static async cancelChosenMeeting(meetingIdentifier) {
         try {
             await cancelChosenMeeting(meetingIdentifier);
         } catch (err) {
@@ -36,7 +36,7 @@ class DataAccess {
         }
     }
 
-    async meetingsInTimeSlot(startingTime, endingTime) {
+    static async meetingsInTimeSlot(startingTime, endingTime) {
         try {
             return await getListAllMeetingInTimeSlot(startingTime, endingTime);
         } catch (err) {
@@ -44,7 +44,7 @@ class DataAccess {
         }
     }
 
-    async meetingsInRoom(roomIdentifier, date) {
+    static async meetingsInRoom(roomIdentifier, date) {
         try {
             return await getListOfAllMeetingInRoom(roomIdentifier, date);
         } catch (err) {
@@ -52,7 +52,7 @@ class DataAccess {
         }
     }
 
-    async changeTitle(meetingIdentifier, newTitle) {
+    static async changeTitle(meetingIdentifier, newTitle) {
         try {
             await changeTitle(meetingIdentifier, newTitle)
         } catch (err) {
@@ -60,7 +60,7 @@ class DataAccess {
         }
     }
 
-    async changeDescription(meetingIdentifier, newDescription) {
+    static async changeDescription(meetingIdentifier, newDescription) {
         try {
             await changeDescription(meetingIdentifier, newDescription)
         } catch (err) {
@@ -68,7 +68,7 @@ class DataAccess {
         }
     }
 
-    async changeParticipants(meetingIdentifier, newParticipants) {
+    static async changeParticipants(meetingIdentifier, newParticipants) {
         try {
             await changeParticipants(meetingIdentifier, newParticipants)
         } catch (err) {
@@ -76,7 +76,7 @@ class DataAccess {
         }
     }
 
-    async changePurpose(meetingIdentifier, newPurpose) {
+    static async changePurpose(meetingIdentifier, newPurpose) {
         try {
             await changePurpose(meetingIdentifier, newPurpose)
         } catch (err) {
@@ -84,7 +84,7 @@ class DataAccess {
         }
     }
 
-    async changeWhiteBoard(meetingIdentifier, newBoard) {
+    static async changeWhiteBoard(meetingIdentifier, newBoard) {
         try {
             await changeWhiteBoard(meetingIdentifier, newBoard)
         } catch (err) {
@@ -94,6 +94,7 @@ class DataAccess {
 
 }
 
+/*
 const DataAccessInstance = (function () {
     let instance;
 
@@ -110,5 +111,6 @@ const DataAccessInstance = (function () {
         },
     };
 })();
+*/
 
-module.exports = DataAccessInstance;
+module.exports = DataAccess;
