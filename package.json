@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "devStart": "nodemon DataAccess/DataBaseManager/script.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --coverage"
   },
   "dependencies": {
     "@grpc/proto-loader": "^0.1.0",
+    "axios": "^0.26.1",
     "bluebird": "^3.7.2",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
@@ -23,10 +24,22 @@
   },
   "main": "app.js",
   "keywords": [],
-  "author": "",
+  "author": "Name",
   "license": "MIT",
-  "description": "",
   "devDependencies": {
+    "jest": "^27.5.1",
     "nodemon": "^2.0.15"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hamriouz/Tapsi_project_ph3.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hamriouz/Tapsi_project_ph3/issues"
+  },
+  "homepage": "https://github.com/hamriouz/Tapsi_project_ph3#readme",
+  "description": ""
 }

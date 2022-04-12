@@ -1,4 +1,4 @@
-const PROTO_PATH = __dirname + '/room.proto';
+const PROTO_PATH = __dirname + 'proto/room.proto';
 const grpc = require('grpc');
 const protoLoader = require('@grpc/proto-loader');
 const Promise = require('bluebird');

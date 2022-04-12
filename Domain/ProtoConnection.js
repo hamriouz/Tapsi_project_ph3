@@ -1,4 +1,4 @@
-const userClient = require('../gRPC/client/userClient');
+const userClient = require('../gRPC/userClient');
 
 class ProtoConnection {
     async isRequestSenderAdmin(token){

@@ -1,4 +1,4 @@
-const Meeting = require('../Domain/Meeting');
+const {Meeting} = require('../Domain/Meeting');
 
 class RequestHandler{
     static async setMeeting(meetingInfo, requestSenderId) {
